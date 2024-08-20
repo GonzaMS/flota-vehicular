@@ -1,5 +1,6 @@
-package com.proyecto.flotavehicular_webapp.Models;
+package com.proyecto.flotavehicular_webapp.models;
 
+import com.proyecto.flotavehicular_webapp.enums.ESTATES;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,23 +16,24 @@ import java.util.List;
 @Entity
 @Table(name = "cars")
 public class Car {
+
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long car_id;
-    private String license_plate;
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    private long carId;
+
+    private String licensePlate;
+
     private String brand;
+
     private String model;
-    private String fabrication_year;
+
+    private String fabricationYear;
 
     @Enumerated(EnumType.STRING)
-    private States state;
+    private ESTATES carState;
 
-    //Relaciones
+    // Relaciones
     @OneToMany(mappedBy = "car", cascade = CascadeType.ALL)
     private List<MaintenanceHistory> maintenanceHistories;
 
-}
-
-enum States {
-    ACTIVE, INACTIVE
 }
