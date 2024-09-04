@@ -38,8 +38,8 @@ El **Proyecto de Control de Flota Vehicular** es un sistema diseñado para gesti
 
 ## Requisitos Previos
 
-1. **Java 11+**: Necesitas tener instalado Java 11 o superior para ejecutar este proyecto.
-2. **PostgreSQL**: Asegúrate de tener PostgreSQL instalado y corriendo.
+1. **Java 11+**
+2. **PostgreSQL**
 3. **Maven**: Para gestionar las dependencias del proyecto.
 
 ## Configuración de la Base de Datos
