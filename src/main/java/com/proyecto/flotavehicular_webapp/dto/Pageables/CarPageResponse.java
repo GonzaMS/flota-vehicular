@@ -1,4 +1,6 @@
-package com.proyecto.flotavehicular_webapp.dto;
+package com.proyecto.flotavehicular_webapp.dto.Pageables;
+
+import com.proyecto.flotavehicular_webapp.dto.CarDTO;
 
 import java.util.List;
 

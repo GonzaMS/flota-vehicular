@@ -1,15 +1,14 @@
 package com.proyecto.flotavehicular_webapp.services.Impl;
 
 import com.proyecto.flotavehicular_webapp.dto.CarDTO;
-import com.proyecto.flotavehicular_webapp.dto.CarPageResponse;
+import com.proyecto.flotavehicular_webapp.dto.Pageables.CarPageResponse;
 import com.proyecto.flotavehicular_webapp.exceptions.NotFoundException;
 import com.proyecto.flotavehicular_webapp.models.Car;
 import com.proyecto.flotavehicular_webapp.repositories.ICarRepository;
 import com.proyecto.flotavehicular_webapp.services.ICarService;
+import com.proyecto.flotavehicular_webapp.utils.PaginationUtil;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -47,10 +46,10 @@ public class ICarServiceImpl implements ICarService {
     @Override
     public void updateCar(Long id, CarDTO carDTO) {
         Car car = carRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
-        car.setBrand(carDTO.getBrand());
-        car.setModel(carDTO.getModel());
-        car.setLicensePlate(carDTO.getLicensePlate());
-        car.setFabricationYear(carDTO.getFabricationYear());
+        car.setCarBrand(carDTO.getCarBrand());
+        car.setCarModel(carDTO.getCarModel());
+        car.setCarLicensePlate(carDTO.getCarLicensePlate());
+        car.setCarFabricationYear(carDTO.getCarFabricationYear());
         car.setCarState(carDTO.getCarState());
         carRepository.save(car);
     }
@@ -63,17 +62,13 @@ public class ICarServiceImpl implements ICarService {
 
     @Override
     public CarPageResponse getAllPagesWithPagination(Integer pageNumber, Integer pageSize) {
-        Pageable pageable = PageRequest.of(pageNumber,pageSize);
-
+        Pageable pageable = PaginationUtil.createPageable(pageNumber, pageSize);
         return getCarPageResponse(pageable);
     }
 
     @Override
     public CarPageResponse getAllPagesWithPaginationAndSorting(Integer pageNumber, Integer pageSize, String sortBy, String dir) {
-        Sort sort = Sort.by(Sort.Direction.fromString(dir), sortBy);
-
-        Pageable pageable = PageRequest.of(pageNumber, pageSize, sort);
-
+        Pageable pageable = PaginationUtil.createPageable(pageNumber, pageSize, sortBy, dir);
         return getCarPageResponse(pageable);
     }
 
@@ -87,19 +82,14 @@ public class ICarServiceImpl implements ICarService {
         return new CarPageResponse(cars, carPage.getNumber(), carPage.getSize(), (int) carPage.getTotalElements(), carPage.getTotalPages(), carPage.isLast());
     }
 
-    @Override
-    public List<CarDTO> getCarsByState(String state) {
-        return  null;
-    }
-
     // Mapping DTO to Car Model
     private Car mapToEntity(CarDTO carDTO) {
         return Car.builder()
                 .carId(carDTO.getCarId())
-                .brand(carDTO.getBrand())
-                .model(carDTO.getModel())
-                .licensePlate(carDTO.getLicensePlate())
-                .fabricationYear(carDTO.getFabricationYear())
+                .carBrand(carDTO.getCarBrand())
+                .carModel(carDTO.getCarModel())
+                .carLicensePlate(carDTO.getCarLicensePlate())
+                .carFabricationYear(carDTO.getCarFabricationYear())
                 .carState(carDTO.getCarState())
                 .build();
     }
@@ -108,10 +98,10 @@ public class ICarServiceImpl implements ICarService {
     private CarDTO mapToDTO(Car car) {
         return CarDTO.builder()
                 .carId(car.getCarId())
-                .brand(car.getBrand())
-                .model(car.getModel())
-                .licensePlate(car.getLicensePlate())
-                .fabricationYear(car.getFabricationYear())
+                .carBrand(car.getCarBrand())
+                .carModel(car.getCarModel())
+                .carLicensePlate(car.getCarLicensePlate())
+                .carFabricationYear(car.getCarFabricationYear())
                 .carState(car.getCarState())
                 .build();
     }

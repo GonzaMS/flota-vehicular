@@ -43,9 +43,9 @@ public class IDriverServiceImpl implements IDriverService {
     public void updateDriver(Long id, DriverDTO driverDTO) {
         Driver driver = driverRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
         driver.setDriverId(driverDTO.getDriverId());
-        driver.setName(driverDTO.getName());
+        driver.setDriverId(driverDTO.getDriverId());
         driver.setDriverLicense(driverDTO.getDriverLicense());
-        driver.setLicenseExpirationDate(driverDTO.getLicenseExpirationDate());
+        driver.setDriverLicenseExpirationDate(driverDTO.getLicenseExpirationDate());
         driver.setDriverState(driverDTO.getDriverState());
         driverRepository.save(driver);
     }
@@ -59,9 +59,9 @@ public class IDriverServiceImpl implements IDriverService {
     private Driver mapToEntity(DriverDTO driverDTO){
         return Driver.builder()
                 .driverId(driverDTO.getDriverId())
-                .name(driverDTO.getName())
+                .driverName(driverDTO.getDriverName())
                 .driverLicense(driverDTO.getDriverLicense())
-                .licenseExpirationDate(driverDTO.getLicenseExpirationDate())
+                .driverLicenseExpirationDate(driverDTO.getLicenseExpirationDate())
                 .driverState(driverDTO.getDriverState())
                 .build();
     }
@@ -70,9 +70,9 @@ public class IDriverServiceImpl implements IDriverService {
     private DriverDTO mapToDto(Driver driver){
         return DriverDTO.builder()
                 .driverId(driver.getDriverId())
-                .name(driver.getName())
+                .driverName(driver.getDriverName())
                 .driverLicense(driver.getDriverLicense())
-                .licenseExpirationDate(driver.getLicenseExpirationDate())
+                .licenseExpirationDate(driver.getDriverLicenseExpirationDate())
                 .driverState(driver.getDriverState())
                 .build();
 

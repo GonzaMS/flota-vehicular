@@ -15,7 +15,7 @@ public class DriverDTO {
     private Long driverId;
 
     @NotBlank(message = "Name is mandatory")
-    private String name;
+    private String driverName;
 
     @NotBlank(message = "Last name is mandatory")
     private String driverLicense;

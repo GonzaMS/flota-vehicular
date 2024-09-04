@@ -2,17 +2,14 @@ package com.proyecto.flotavehicular_webapp.models;
 
 import com.proyecto.flotavehicular_webapp.enums.ESTATES;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
+import lombok.*;
 
 import java.util.Date;
 
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
 @Builder
 @Entity
 @Table(name = "drivers")
@@ -21,12 +18,10 @@ public class Driver {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private long driverId;
 
-    private String name;
-
+    private String driverName;
     private String driverLicense;
 
-    @CreatedDate
-    private Date licenseExpirationDate;
+    private Date driverLicenseExpirationDate;
 
     @Enumerated(EnumType.STRING)
     private ESTATES driverState;

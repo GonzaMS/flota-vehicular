@@ -13,16 +13,16 @@ public class CarDTO {
     private long carId;
 
     @NotBlank(message = "License plate is mandatory")
-    private String brand;
+    private String carBrand;
 
     @NotBlank(message = "Model is mandatory")
-    private String model;
+    private String carModel;
 
     @NotBlank(message = "Fabrication year is mandatory")
-    private String licensePlate;
+    private String carLicensePlate;
 
     @NotBlank(message = "Fabrication year is mandatory")
-    private String fabricationYear;
+    private String carFabricationYear;
 
     @NotNull(message = "Car state is mandatory")
     private ESTATES carState;

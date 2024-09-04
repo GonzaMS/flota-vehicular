@@ -2,38 +2,25 @@ package com.proyecto.flotavehicular_webapp.models;
 
 import com.proyecto.flotavehicular_webapp.enums.ESTATES;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-import java.util.List;
-
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Entity
 @Table(name = "cars")
 public class Car {
-
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private long carId;
 
-    private String licensePlate;
-
-    private String brand;
-
-    private String model;
-
-    private String fabricationYear;
+    private String carLicensePlate;
+    private String carBrand;
+    private String carModel;
+    private String carFabricationYear;
 
     @Enumerated(EnumType.STRING)
     private ESTATES carState;
-
-    // Relaciones
-    @OneToMany(mappedBy = "car", cascade = CascadeType.ALL)
-    private List<MaintenanceHistory> maintenanceHistories;
-
 }

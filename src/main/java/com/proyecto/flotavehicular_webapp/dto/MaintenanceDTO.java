@@ -18,15 +18,15 @@ public class MaintenanceDTO {
     private long maintenanceId;
 
     @NotBlank(message = "Description is mandatory")
-    private String description;
+    private String serviceDescription;
 
     @NotBlank(message = "Cost is mandatory")
-    private double cost;
+    private double serviceCost;
 
     @Enumerated(EnumType.STRING)
     @NotNull(message = "Maintenance type is mandatory")
-    private EMAINTENANCE type;
+    private EMAINTENANCE serviceType;
 
     @CreatedDate
-    private Date date;
+    private Date serviceDate;
 }

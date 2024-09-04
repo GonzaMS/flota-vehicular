@@ -1,7 +1,8 @@
 package com.proyecto.flotavehicular_webapp.controllers;
 
 import com.proyecto.flotavehicular_webapp.dto.CarDTO;
-import com.proyecto.flotavehicular_webapp.dto.CarPageResponse;
+import com.proyecto.flotavehicular_webapp.dto.Pageables.CarPageResponse;
+import com.proyecto.flotavehicular_webapp.enums.ESTATES;
 import com.proyecto.flotavehicular_webapp.models.Car;
 import com.proyecto.flotavehicular_webapp.services.ICarService;
 import jakarta.validation.Valid;
@@ -19,14 +20,12 @@ public class CarController {
         this.carService = carService;
     }
 
-    // Get pageable
     @GetMapping
     public ResponseEntity<CarPageResponse> getAllCars(@RequestParam(defaultValue = "0") Integer pageNumber,
                                                       @RequestParam(defaultValue = "10") Integer pageSize) {
         CarPageResponse cars = carService.getAllPagesWithPagination(pageNumber, pageSize);
         return ResponseEntity.ok(cars);
     }
-
 
     @GetMapping("/{id}")
     public ResponseEntity<CarDTO> getCarById(@PathVariable Long id) {
