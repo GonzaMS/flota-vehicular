@@ -20,7 +20,6 @@ public class Driver {
 
     private String driverName;
     private String driverLicense;
-
     private Date driverLicenseExpirationDate;
 
     @Enumerated(EnumType.STRING)

@@ -4,7 +4,6 @@ package com.proyecto.flotavehicular_webapp.models;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.lang.runtime.ObjectMethods;
 import java.util.Date;
 
 @Data

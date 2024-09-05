@@ -4,7 +4,7 @@ import com.proyecto.flotavehicular_webapp.enums.EORDERSSTATE;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 
 @Data
 @Builder
@@ -20,8 +20,8 @@ public class TravelOrder {
     private long travelOrderId;
 
     private String client;
-    private LocalDateTime travelLeaveDate;
-    private LocalDateTime travelArriveDate;
+    private Date travelLeaveDate;
+    private Date travelArriveDate;
 
     @Enumerated(EnumType.STRING)
     private EORDERSSTATE travelOrderState;

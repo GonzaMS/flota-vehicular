@@ -4,7 +4,7 @@ import com.proyecto.flotavehicular_webapp.enums.EMAINTENANCE;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.sql.Date;
+import java.util.Date;
 
 @NoArgsConstructor
 @AllArgsConstructor

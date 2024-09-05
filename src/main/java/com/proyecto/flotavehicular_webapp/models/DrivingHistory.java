@@ -4,7 +4,7 @@ package com.proyecto.flotavehicular_webapp.models;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
+import java.util.Date;
 
 @Data
 @Builder
@@ -19,7 +19,7 @@ public class DrivingHistory {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long drivingHistoryId;
 
-    private LocalDate drivingDate;
+    private Date drivingDate;
     private Double kmDriven;
 
     // Relaciones

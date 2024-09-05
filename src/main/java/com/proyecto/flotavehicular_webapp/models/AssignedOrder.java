@@ -1,7 +1,5 @@
 package com.proyecto.flotavehicular_webapp.models;
 
-
-import com.proyecto.flotavehicular_webapp.enums.EASIGGNED;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -13,14 +11,14 @@ import java.util.Date;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "assigned_vehicles")
-public class AssignedVehicles {
+@Table(name = "assigned_orders")
+public class AssignedOrder {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private Long assignedVehicleId;
+    private Long assignedOrderId;
 
     private Date assignedDate;
-
+    private String itinerary;
 
     //Relaciones
     @ManyToOne

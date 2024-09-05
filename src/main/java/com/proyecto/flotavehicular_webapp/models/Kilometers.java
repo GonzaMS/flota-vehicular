@@ -3,7 +3,7 @@ package com.proyecto.flotavehicular_webapp.models;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
+import java.util.Date;
 
 @Data
 @Builder
@@ -19,7 +19,7 @@ public class Kilometers {
     private Long kilometersId;
 
     private Integer actualKm;
-    private LocalDate updateKmDate;
+    private Date updateKmDate;
 
     // Relaciones
     @ManyToOne

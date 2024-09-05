@@ -4,7 +4,7 @@ package com.proyecto.flotavehicular_webapp.models;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
+import java.util.Date;
 
 @Data
 @Builder
@@ -20,7 +20,7 @@ public class CarIncidense {
     private Long incidenseId;
 
     private String incidenseDescription;
-    private LocalDate incidenseDate;
+    private Date incidenseDate;
 
     //Relaciones
     @ManyToOne

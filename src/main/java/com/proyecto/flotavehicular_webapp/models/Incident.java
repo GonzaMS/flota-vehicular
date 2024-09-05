@@ -3,7 +3,7 @@ package com.proyecto.flotavehicular_webapp.models;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDate;
+import java.util.Date;
 
 @Data
 @Builder
@@ -19,7 +19,7 @@ public class Incident {
     private Long incidentId;
 
     private String incidentDescription;
-    private LocalDate incidentDate;
+    private Date incidentDate;
     private String incidentType;
 
     // Relaciones
