@@ -8,8 +8,6 @@ import java.util.Date;
 
 @Data
 @Builder
-@Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity

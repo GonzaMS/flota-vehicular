@@ -23,6 +23,6 @@ public class DriverDTO {
     @NotNull(message = "Driver state is mandatory")
     private ESTATES driverState;
 
-
+    @NotNull(message = "Driver license expiration date is mandatory")
     private Date licenseExpirationDate;
 }
