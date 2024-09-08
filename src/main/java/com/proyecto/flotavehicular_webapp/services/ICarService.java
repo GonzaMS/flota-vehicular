@@ -1,14 +1,13 @@
 package com.proyecto.flotavehicular_webapp.services;
 
 import com.proyecto.flotavehicular_webapp.dto.CarDTO;
-import com.proyecto.flotavehicular_webapp.dto.Pageables.CarPageResponse;
+import com.proyecto.flotavehicular_webapp.utils.PageResponse;
 import com.proyecto.flotavehicular_webapp.models.Car;
 
-import java.util.List;
 
 public interface ICarService {
 
-    List<CarDTO> getAllCars();
+    PageResponse getAllCars(int pageNumber, int pageSize);
 
     CarDTO getCarById(Long id);
 
@@ -18,10 +17,12 @@ public interface ICarService {
 
     void deleteCar(Long id);
 
-    CarPageResponse getAllPagesWithPagination(Integer pageNumber, Integer pageSize);
-
-    CarPageResponse getAllPagesWithPaginationAndSorting(Integer pageNumber, Integer pageSize,
-                                                        String sortBy,
-                                                        String dir);
     // Filters
+    PageResponse getCarByState(String state, int pageNumber, int pageSize);
+
+    PageResponse getCarByBrand(String brand, int pageNumber, int pageSize);
+
+    PageResponse getCarByModel(String model, int pageNumber, int pageSize);
+
+    PageResponse getCarByLicensePlate(String licensePlate, int pageNumber, int pageSize);
 }

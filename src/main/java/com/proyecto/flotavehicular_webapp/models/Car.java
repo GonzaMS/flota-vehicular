@@ -4,8 +4,7 @@ import com.proyecto.flotavehicular_webapp.enums.ESTATES;
 import jakarta.persistence.*;
 import lombok.*;
 
-@Getter
-@Setter
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
