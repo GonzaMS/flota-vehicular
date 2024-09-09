@@ -54,7 +54,10 @@ public class CarController {
     @PutMapping("/{id}")
     public ResponseEntity<CarDTO> updateCar(@PathVariable Long id, @Valid @RequestBody CarDTO carDTO) {
         carService.updateCar(id, carDTO);
-        return ResponseEntity.ok().body(carDTO);
+
+        CarDTO updateCar = carService.getCarById(id);
+
+        return ResponseEntity.ok().body(updateCar);
     }
 
     @DeleteMapping("/{id}")
@@ -62,6 +65,14 @@ public class CarController {
         carService.deleteCar(id);
         return ResponseEntity.ok().build();
     }
+
+    @PutMapping("/deactivate/{id}")
+    public ResponseEntity<CarDTO> deactivateCar(@PathVariable Long id) {
+        carService.deactivateCar(id);
+        CarDTO updatedCar = carService.getCarById(id);
+        return ResponseEntity.ok(updatedCar);
+    }
+
 
     // Filters
     @GetMapping("/state")
@@ -123,11 +134,4 @@ public class CarController {
 
         return ResponseEntity.ok(carPageResponse);
     }
-
-    @GetMapping("/simulate-error")
-    public ResponseEntity<String> simulateInternalError() {
-        // Forzar una excepción interna para probar el manejo de errores 500
-        throw new InternalError("Simulated internal server error");
-    }
-
 }
