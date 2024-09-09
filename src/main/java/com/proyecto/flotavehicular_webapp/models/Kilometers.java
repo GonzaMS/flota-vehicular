@@ -17,10 +17,24 @@ public class Kilometers {
     private Long kilometersId;
 
     private Integer actualKm;
+
+    @Temporal(TemporalType.TIMESTAMP)
     private Date updateKmDate;
 
-    // Relaciones
     @ManyToOne
     @JoinColumn(name = "car_id")
     private Car car;
+
+    @PrePersist
+    protected void onCreate() {
+        if (this.updateKmDate == null) {
+            this.updateKmDate = new Date();
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updateKmDate = new Date();
+    }
 }
+

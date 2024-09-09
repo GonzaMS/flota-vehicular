@@ -3,8 +3,8 @@ package com.proyecto.flotavehicular_webapp.dto;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.format.annotation.DateTimeFormat;
+
+import java.util.Date;
 
 @Data
 @Builder
@@ -15,9 +15,7 @@ public class KilometersDTO {
     @NotNull(message = "Actual km is mandatory")
     private Integer actualKm;
 
-    @CreatedDate
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    private String updateKmDate;
+    private Date updateKmDate;
 
     @NotNull(message = "Car id is mandatory")
     private Long carId;
