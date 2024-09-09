@@ -24,6 +24,4 @@ public class PerformanceEvaluation {
     @ManyToOne
     @JoinColumn(name = "driver_id")
     private Driver driver;
-
-
 }

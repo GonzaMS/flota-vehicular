@@ -23,5 +23,4 @@ public class TravelOrder {
 
     @Enumerated(EnumType.STRING)
     private EORDERSSTATE travelOrderState;
-
 }

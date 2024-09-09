@@ -31,5 +31,4 @@ public class AssignedOrder {
     @ManyToOne
     @JoinColumn(name = "travel_order_id")
     private TravelOrder travelOrder;
-
 }

@@ -24,6 +24,4 @@ public class CarIncidense {
     @ManyToOne
     @JoinColumn(name = "car_id")
     private Car car;
-
-
 }
