@@ -9,8 +9,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.util.Date;
 
@@ -19,8 +17,6 @@ import java.util.Date;
 public class MaintenanceDTO {
     private long maintenanceId;
 
-    @CreatedDate
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
     private Date maintenanceDate;
 
     @NotBlank(message = "Description is mandatory")
@@ -36,5 +32,5 @@ public class MaintenanceDTO {
     private EMAINTENANCE maintenanceType;
 
     @NotNull(message = "Car id is mandatory")
-    private long carId;
+    private Long carId;
 }

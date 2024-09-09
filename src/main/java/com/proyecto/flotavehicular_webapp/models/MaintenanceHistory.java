@@ -17,7 +17,9 @@ public class MaintenanceHistory {
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private long maintenanceId;
 
+    @Temporal(TemporalType.TIMESTAMP)
     private Date maintenanceDate;
+
     private String maintenanceDescription;
     private Double maintenanceCost;
 
@@ -29,4 +31,15 @@ public class MaintenanceHistory {
     @JoinColumn(name = "car_id")
     private Car car;
 
+    @PrePersist
+    protected void onCreate() {
+        if (this.maintenanceDate == null) {
+            this.maintenanceDate = new Date();
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.maintenanceDate = new Date();
+    }
 }

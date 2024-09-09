@@ -53,8 +53,12 @@ public class MaintenanceController {
 
     @PutMapping("/{id}")
     public ResponseEntity<MaintenanceDTO> updateMiantenance(@PathVariable Long id, @Valid @RequestBody MaintenanceDTO maintenanceDTO){
+
         maintenanceService.updateMaintenance(id, maintenanceDTO);
-        return ResponseEntity.ok().body(maintenanceDTO);
+
+        MaintenanceDTO updatedMaintenance = maintenanceService.getById(id);
+
+        return ResponseEntity.ok().body(updatedMaintenance);
     }
 
     @DeleteMapping

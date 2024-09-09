@@ -17,5 +17,5 @@ public interface IMaintenanceService {
 
     void deleteMaintenance(Long id);
 
-    PageResponse getMaintenanceByCarId(Long id, int pageNumber, int pageSize);
+    PageResponse<MaintenanceDTO> getMaintenanceByCarId(Long id, int pageNumber, int pageSize);
 }
