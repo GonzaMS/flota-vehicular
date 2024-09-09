@@ -123,4 +123,11 @@ public class CarController {
 
         return ResponseEntity.ok(carPageResponse);
     }
+
+    @GetMapping("/simulate-error")
+    public ResponseEntity<String> simulateInternalError() {
+        // Forzar una excepción interna para probar el manejo de errores 500
+        throw new InternalError("Simulated internal server error");
+    }
+
 }

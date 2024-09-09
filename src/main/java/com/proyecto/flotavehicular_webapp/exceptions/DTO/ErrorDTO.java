@@ -1,9 +1,9 @@
-package com.proyecto.flotavehicular_webapp.exceptions;
+package com.proyecto.flotavehicular_webapp.exceptions.DTO;
 
 import lombok.Data;
 
 @Data
-public class ErrorObject {
+public class ErrorDTO {
     private final String path;
     private final String error;
     private final String message;
