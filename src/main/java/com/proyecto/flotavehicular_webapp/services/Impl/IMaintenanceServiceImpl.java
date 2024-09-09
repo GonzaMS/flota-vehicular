@@ -95,6 +95,10 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
 
         Page<MaintenanceHistory> maintenanceHistoryPage = maintenanceRepository.findByCar_CarId(id, pageable);
 
+        if(maintenanceHistoryPage.isEmpty()){
+            throw new NotFoundException(NOTFOUND + " for car with id: " + id);
+        }
+
         List<MaintenanceDTO> maintenanceDTOList = maintenanceHistoryPage.stream()
                 .map(this::mapToDto)
                 .toList();
@@ -110,6 +114,7 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
     }
 
 
+    // Mappers
     // Map entity to DTO
     private MaintenanceDTO mapToDto(MaintenanceHistory maintenanceHistory){
         return MaintenanceDTO.builder()
