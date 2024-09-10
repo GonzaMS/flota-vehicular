@@ -52,7 +52,10 @@ public class CarController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CarDTO> updateCar(@PathVariable Long id, @Valid @RequestBody CarDTO carDTO) {
+    public ResponseEntity<CarDTO> updateCar(
+            @PathVariable Long id,
+            @Valid @RequestBody CarDTO carDTO) {
+
         carService.updateCar(id, carDTO);
 
         CarDTO updateCar = carService.getCarById(id);

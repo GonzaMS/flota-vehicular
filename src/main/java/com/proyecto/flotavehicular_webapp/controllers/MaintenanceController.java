@@ -36,7 +36,6 @@ public class MaintenanceController {
     @GetMapping("/{id}")
     public ResponseEntity<MaintenanceDTO> getMaintenanceById(@PathVariable Long id){
         MaintenanceDTO maintenance = maintenanceService.getById(id);
-
         return ResponseEntity.ok(maintenance);
     }
 
@@ -52,7 +51,9 @@ public class MaintenanceController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<MaintenanceDTO> updateMiantenance(@PathVariable Long id, @Valid @RequestBody MaintenanceDTO maintenanceDTO){
+    public ResponseEntity<MaintenanceDTO> updateMaintenance(
+            @PathVariable Long id,
+            @Valid @RequestBody MaintenanceDTO maintenanceDTO){
 
         maintenanceService.updateMaintenance(id, maintenanceDTO);
 
@@ -69,9 +70,11 @@ public class MaintenanceController {
 
     // Filters
     @GetMapping("/car/{carId}")
-    public ResponseEntity<PageResponse<MaintenanceDTO>> getMaintenancesByCarId(@PathVariable Long carId,
-                                                                              @RequestParam(defaultValue = "0") int pageNumber,
-                                                                              @RequestParam(defaultValue = "10") int pageSize){
+    public ResponseEntity<PageResponse<MaintenanceDTO>> getMaintenancesByCarId(
+            @PathVariable Long carId,
+            @RequestParam(defaultValue = "0") int pageNumber,
+            @RequestParam(defaultValue = "10") int pageSize){
+
         PageResponse<MaintenanceDTO> maintenanceDTOPageResponse = maintenanceService.getMaintenanceByCarId(carId, pageNumber, pageSize);
 
         if (maintenanceDTOPageResponse.items().isEmpty()) {

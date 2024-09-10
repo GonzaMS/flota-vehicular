@@ -90,7 +90,8 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
     }
 
     @Override
-    public PageResponse getMaintenanceByCarId(Long id, int pageNumber, int pageSize) {
+    @Transactional(readOnly = true)
+    public PageResponse<MaintenanceDTO> getMaintenanceByCarId(Long id, int pageNumber, int pageSize) {
         Pageable pageable = PageRequest.of(pageNumber,pageSize);
 
         Page<MaintenanceHistory> maintenanceHistoryPage = maintenanceRepository.findByCar_CarId(id, pageable);
@@ -112,7 +113,6 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
                 maintenanceHistoryPage.isLast()
         );
     }
-
 
     // Mappers
     // Map entity to DTO

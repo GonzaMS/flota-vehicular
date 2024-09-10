@@ -11,17 +11,32 @@ import java.util.Date;
 @NoArgsConstructor
 @Entity
 @Table(name = "incidents")
-public class Incident {
+public class CarIncidents {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long incidentId;
 
     private String incidentDescription;
+
+    @Temporal(TemporalType.DATE)
     private Date incidentDate;
     private String incidentType;
 
     // Relaciones
     @ManyToOne
-    @JoinColumn(name = "driver_id")
-    private Driver driver;
+    @JoinColumn(name = "car_id")
+    private Car car;
+
+
+    @PrePersist
+    protected void onCreate() {
+        if (this.incidentDate == null) {
+            this.incidentDate = new Date();
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.incidentDate = new Date();
+    }
 }

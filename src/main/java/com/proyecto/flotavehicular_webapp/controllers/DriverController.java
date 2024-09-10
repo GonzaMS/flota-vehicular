@@ -40,7 +40,10 @@ public class DriverController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<DriverDTO> updateDriver(@PathVariable Long id, @Valid @RequestBody DriverDTO driverDTO){
+    public ResponseEntity<DriverDTO> updateDriver(
+            @PathVariable Long id,
+            @Valid @RequestBody DriverDTO driverDTO){
+
         driverService.updateDriver(id,driverDTO);
         return ResponseEntity.ok().build();
     }

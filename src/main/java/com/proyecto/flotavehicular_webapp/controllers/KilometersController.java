@@ -52,7 +52,10 @@ public class KilometersController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<KilometersDTO> updateKilometers(@PathVariable Long id, @RequestBody KilometersDTO kilometersDTO) {
+    public ResponseEntity<KilometersDTO> updateKilometers(
+            @PathVariable Long id,
+            @RequestBody KilometersDTO kilometersDTO) {
+
         kilometersService.updateKilometers(id, kilometersDTO);
 
         KilometersDTO updatedKilometers = kilometersService.getKilometersById(id);
@@ -70,9 +73,11 @@ public class KilometersController {
 
     // Filters
     @GetMapping("/car/{carId}")
-    public ResponseEntity<PageResponse<KilometersDTO>> getKilometersByCarId(@PathVariable Long carId,
-                                                                           @RequestParam(defaultValue = "0") int pageNumber,
-                                                                           @RequestParam(defaultValue = "10") int pageSize){
+    public ResponseEntity<PageResponse<KilometersDTO>> getKilometersByCarId(
+            @PathVariable Long carId,
+            @RequestParam(defaultValue = "0") int pageNumber,
+            @RequestParam(defaultValue = "10") int pageSize){
+
         PageResponse<KilometersDTO> kilometersPageResponse = kilometersService.getKilometersByCarId(carId, pageNumber, pageSize);
 
         if (kilometersPageResponse.items().isEmpty()) {

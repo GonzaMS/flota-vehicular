@@ -25,6 +25,7 @@ public class Users {
 
     private String userPassword;
 
+    @Enumerated(EnumType.STRING)
     private ESTATES userState;
 
     @OneToOne(mappedBy = "users", cascade = CascadeType.ALL)
