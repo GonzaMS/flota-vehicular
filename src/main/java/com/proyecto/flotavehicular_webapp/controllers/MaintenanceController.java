@@ -35,8 +35,7 @@ public class MaintenanceController {
 
     @GetMapping("/{id}")
     public ResponseEntity<MaintenanceDTO> getMaintenanceById(@PathVariable Long id){
-        MaintenanceDTO maintenance = maintenanceService.getById(id);
-
+        MaintenanceDTO maintenance = maintenanceService.getMaintenanceById(id);
         return ResponseEntity.ok(maintenance);
     }
 
@@ -52,22 +51,30 @@ public class MaintenanceController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<MaintenanceDTO> updateMiantenance(@PathVariable Long id, @Valid @RequestBody MaintenanceDTO maintenanceDTO){
+    public ResponseEntity<MaintenanceDTO> updateMaintenance(
+            @PathVariable Long id,
+            @Valid @RequestBody MaintenanceDTO maintenanceDTO){
+
         maintenanceService.updateMaintenance(id, maintenanceDTO);
-        return ResponseEntity.ok().body(maintenanceDTO);
+
+        MaintenanceDTO updatedMaintenance = maintenanceService.getMaintenanceById(id);
+
+        return ResponseEntity.ok().body(updatedMaintenance);
     }
 
-    @DeleteMapping
-    public ResponseEntity<MaintenanceHistory> deleteMaintenance(Long id){
+    @DeleteMapping("/{id}")
+    public ResponseEntity<MaintenanceHistory> deleteMaintenance(@PathVariable  Long id){
         maintenanceService.deleteMaintenance(id);
         return ResponseEntity.ok().build();
     }
 
     // Filters
     @GetMapping("/car/{carId}")
-    public ResponseEntity<PageResponse<MaintenanceDTO>> getMaintenancesByCarId(@PathVariable Long carId,
-                                                                              @RequestParam(defaultValue = "0") int pageNumber,
-                                                                              @RequestParam(defaultValue = "10") int pageSize){
+    public ResponseEntity<PageResponse<MaintenanceDTO>> getMaintenancesByCarId(
+            @PathVariable Long carId,
+            @RequestParam(defaultValue = "0") int pageNumber,
+            @RequestParam(defaultValue = "10") int pageSize){
+
         PageResponse<MaintenanceDTO> maintenanceDTOPageResponse = maintenanceService.getMaintenanceByCarId(carId, pageNumber, pageSize);
 
         if (maintenanceDTOPageResponse.items().isEmpty()) {

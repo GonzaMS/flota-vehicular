@@ -53,7 +53,7 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
 
     @Override
     @Transactional(readOnly = true)
-    public MaintenanceDTO getById(Long id) {
+    public MaintenanceDTO getMaintenanceById(Long id) {
         MaintenanceHistory maintenanceHistory = maintenanceRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
         return mapToDto(maintenanceHistory);
     }
@@ -90,10 +90,15 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
     }
 
     @Override
-    public PageResponse getMaintenanceByCarId(Long id, int pageNumber, int pageSize) {
+    @Transactional(readOnly = true)
+    public PageResponse<MaintenanceDTO> getMaintenanceByCarId(Long id, int pageNumber, int pageSize) {
         Pageable pageable = PageRequest.of(pageNumber,pageSize);
 
         Page<MaintenanceHistory> maintenanceHistoryPage = maintenanceRepository.findByCar_CarId(id, pageable);
+
+        if(maintenanceHistoryPage.isEmpty()){
+            throw new NotFoundException(NOTFOUND + " for car with id: " + id);
+        }
 
         List<MaintenanceDTO> maintenanceDTOList = maintenanceHistoryPage.stream()
                 .map(this::mapToDto)
@@ -109,7 +114,7 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
         );
     }
 
-
+    // Mappers
     // Map entity to DTO
     private MaintenanceDTO mapToDto(MaintenanceHistory maintenanceHistory){
         return MaintenanceDTO.builder()

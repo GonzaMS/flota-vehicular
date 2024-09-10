@@ -28,5 +28,4 @@ public class DrivingHistory {
     @ManyToOne
     @JoinColumn(name = "car_id")
     private Car car;
-
 }

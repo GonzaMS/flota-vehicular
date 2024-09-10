@@ -9,7 +9,7 @@ import com.proyecto.flotavehicular_webapp.utils.PageResponse;
 public interface IMaintenanceService {
     PageResponse<MaintenanceDTO> getAllMaintenances(int pageNumber, int pageSize);
 
-    MaintenanceDTO getById(Long id);
+    MaintenanceDTO getMaintenanceById(Long id);
 
     MaintenanceHistory saveMaintenance(MaintenanceDTO maintenanceDTO);
 
@@ -17,5 +17,5 @@ public interface IMaintenanceService {
 
     void deleteMaintenance(Long id);
 
-    PageResponse getMaintenanceByCarId(Long id, int pageNumber, int pageSize);
+    PageResponse<MaintenanceDTO> getMaintenanceByCarId(Long id, int pageNumber, int pageSize);
 }

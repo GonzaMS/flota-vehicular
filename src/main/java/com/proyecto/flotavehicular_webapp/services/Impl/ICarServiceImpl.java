@@ -82,6 +82,14 @@ public class ICarServiceImpl implements ICarService {
         carRepository.delete(car);
     }
 
+    @Override
+    @Transactional
+    public void deactivateCar(Long id) {
+        Car car = carRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
+        car.setCarState(ESTATES.INACTIVE);
+        carRepository.save(car);
+    }
+
     // Filters
     @Override
     @Transactional(readOnly = true)

@@ -52,9 +52,15 @@ public class CarController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<CarDTO> updateCar(@PathVariable Long id, @Valid @RequestBody CarDTO carDTO) {
+    public ResponseEntity<CarDTO> updateCar(
+            @PathVariable Long id,
+            @Valid @RequestBody CarDTO carDTO) {
+
         carService.updateCar(id, carDTO);
-        return ResponseEntity.ok().body(carDTO);
+
+        CarDTO updateCar = carService.getCarById(id);
+
+        return ResponseEntity.ok().body(updateCar);
     }
 
     @DeleteMapping("/{id}")
@@ -63,12 +69,20 @@ public class CarController {
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping("/deactivate/{id}")
+    public ResponseEntity<CarDTO> deactivateCar(@PathVariable Long id) {
+        carService.deactivateCar(id);
+        CarDTO updatedCar = carService.getCarById(id);
+        return ResponseEntity.ok(updatedCar);
+    }
+
+
     // Filters
-    @GetMapping("/state")
+    @GetMapping("/state/{state}")
     public ResponseEntity<PageResponse<CarDTO>> getCarByState(
             @RequestParam(defaultValue = "0") int pageNumber,
             @RequestParam(defaultValue = "10") int pageSize,
-            @RequestParam String state) {
+            @PathVariable String state) {
 
         PageResponse<CarDTO> carPageResponse = carService.getCarByState(state, pageSize, pageNumber);
 
@@ -79,11 +93,11 @@ public class CarController {
         return ResponseEntity.ok(carPageResponse);
     }
 
-    @GetMapping("/brand")
+    @GetMapping("/brand/{brand}")
     public ResponseEntity<PageResponse<CarDTO>> getCarByBrand(
             @RequestParam(defaultValue = "0") int pageNumber,
             @RequestParam(defaultValue = "10") int pageSize,
-            @RequestParam String brand) {
+            @PathVariable String brand) {
 
         PageResponse<CarDTO> carPageResponse = carService.getCarByBrand(brand, pageSize, pageNumber);
 
@@ -94,11 +108,11 @@ public class CarController {
         return ResponseEntity.ok(carPageResponse);
     }
 
-    @GetMapping("/model")
+    @GetMapping("/model/{model}")
     public ResponseEntity<PageResponse<CarDTO>> getCarByModel(
             @RequestParam(defaultValue = "0") int pageNumber,
             @RequestParam(defaultValue = "10") int pageSize,
-            @RequestParam String model) {
+            @PathVariable String model) {
 
         PageResponse<CarDTO> carPageResponse = carService.getCarByModel(model, pageNumber, pageSize);
 
@@ -109,11 +123,11 @@ public class CarController {
         return ResponseEntity.ok(carPageResponse);
     }
 
-    @GetMapping("/licensePlate")
+    @GetMapping("/licensePlate/{licensePlate}")
     public ResponseEntity<PageResponse<CarDTO>> getCarByLicensePlate(
             @RequestParam(defaultValue = "0") int pageNumber,
             @RequestParam(defaultValue = "10") int pageSize,
-            @RequestParam String licensePlate) {
+            @PathVariable String licensePlate) {
 
         PageResponse<CarDTO> carPageResponse = carService.getCarByLicensePlate(licensePlate, pageNumber, pageSize);
 
@@ -123,11 +137,4 @@ public class CarController {
 
         return ResponseEntity.ok(carPageResponse);
     }
-
-    @GetMapping("/simulate-error")
-    public ResponseEntity<String> simulateInternalError() {
-        // Forzar una excepción interna para probar el manejo de errores 500
-        throw new InternalError("Simulated internal server error");
-    }
-
 }

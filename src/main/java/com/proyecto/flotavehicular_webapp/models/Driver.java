@@ -23,4 +23,8 @@ public class Driver {
 
     @Enumerated(EnumType.STRING)
     private ESTATES driverState;
+
+//    @OneToOne
+//    @JoinColumn(name = "user_id")
+//    private Users users;
 }
