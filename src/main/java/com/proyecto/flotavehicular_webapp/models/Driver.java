@@ -15,7 +15,7 @@ import java.util.Date;
 public class Driver {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private long driverId;
+    private Long driverId;
 
     private String driverName;
     private String driverLicense;
@@ -24,7 +24,7 @@ public class Driver {
     @Enumerated(EnumType.STRING)
     private ESTATES driverState;
 
-    @OneToOne
-    @JoinColumn(name = "user_id")
-    private Users users;
+//    @OneToOne
+//    @JoinColumn(name = "user_id")
+//    private Users users;
 }

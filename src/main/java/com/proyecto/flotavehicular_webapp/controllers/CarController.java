@@ -78,11 +78,11 @@ public class CarController {
 
 
     // Filters
-    @GetMapping("/state")
+    @GetMapping("/state/{state}")
     public ResponseEntity<PageResponse<CarDTO>> getCarByState(
             @RequestParam(defaultValue = "0") int pageNumber,
             @RequestParam(defaultValue = "10") int pageSize,
-            @RequestParam String state) {
+            @PathVariable String state) {
 
         PageResponse<CarDTO> carPageResponse = carService.getCarByState(state, pageSize, pageNumber);
 
@@ -93,11 +93,11 @@ public class CarController {
         return ResponseEntity.ok(carPageResponse);
     }
 
-    @GetMapping("/brand")
+    @GetMapping("/brand/{brand}")
     public ResponseEntity<PageResponse<CarDTO>> getCarByBrand(
             @RequestParam(defaultValue = "0") int pageNumber,
             @RequestParam(defaultValue = "10") int pageSize,
-            @RequestParam String brand) {
+            @PathVariable String brand) {
 
         PageResponse<CarDTO> carPageResponse = carService.getCarByBrand(brand, pageSize, pageNumber);
 
@@ -108,11 +108,11 @@ public class CarController {
         return ResponseEntity.ok(carPageResponse);
     }
 
-    @GetMapping("/model")
+    @GetMapping("/model/{model}")
     public ResponseEntity<PageResponse<CarDTO>> getCarByModel(
             @RequestParam(defaultValue = "0") int pageNumber,
             @RequestParam(defaultValue = "10") int pageSize,
-            @RequestParam String model) {
+            @PathVariable String model) {
 
         PageResponse<CarDTO> carPageResponse = carService.getCarByModel(model, pageNumber, pageSize);
 
@@ -123,11 +123,11 @@ public class CarController {
         return ResponseEntity.ok(carPageResponse);
     }
 
-    @GetMapping("/licensePlate")
+    @GetMapping("/licensePlate/{licensePlate}")
     public ResponseEntity<PageResponse<CarDTO>> getCarByLicensePlate(
             @RequestParam(defaultValue = "0") int pageNumber,
             @RequestParam(defaultValue = "10") int pageSize,
-            @RequestParam String licensePlate) {
+            @PathVariable String licensePlate) {
 
         PageResponse<CarDTO> carPageResponse = carService.getCarByLicensePlate(licensePlate, pageNumber, pageSize);
 

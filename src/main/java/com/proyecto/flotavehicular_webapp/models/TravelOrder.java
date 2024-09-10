@@ -15,7 +15,7 @@ import java.util.Date;
 public class TravelOrder {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private long travelOrderId;
+    private Long travelOrderId;
 
     private String client;
     private Date travelLeaveDate;

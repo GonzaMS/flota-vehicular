@@ -15,7 +15,7 @@ import java.util.Date;
 public class MaintenanceHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private long maintenanceId;
+    private Long maintenanceId;
 
     @Temporal(TemporalType.TIMESTAMP)
     private Date maintenanceDate;

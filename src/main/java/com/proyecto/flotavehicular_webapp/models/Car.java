@@ -13,7 +13,7 @@ import lombok.*;
 public class Car {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private long carId;
+    private Long carId;
 
     private String carLicensePlate;
     private String carBrand;

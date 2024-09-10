@@ -15,7 +15,7 @@ import java.util.Date;
 @Data
 @Builder
 public class MaintenanceDTO {
-    private long maintenanceId;
+    private Long maintenanceId;
 
     private Date maintenanceDate;
 

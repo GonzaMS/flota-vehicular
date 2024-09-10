@@ -61,8 +61,8 @@ public class CarIncidentsController {
         return ResponseEntity.ok().body(carIncidentsDTO1);
     }
 
-    @DeleteMapping
-    public ResponseEntity<CarIncidents> deleteMaintenance(Long id){
+    @DeleteMapping("/{id}")
+    public ResponseEntity<CarIncidents> deleteMaintenance(@PathVariable Long id){
         carIncidentsService.deleteIncident(id);
         return ResponseEntity.ok().build();
     }

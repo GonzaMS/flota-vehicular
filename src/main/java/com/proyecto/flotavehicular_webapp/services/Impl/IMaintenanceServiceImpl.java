@@ -53,7 +53,7 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
 
     @Override
     @Transactional(readOnly = true)
-    public MaintenanceDTO getById(Long id) {
+    public MaintenanceDTO getMaintenanceById(Long id) {
         MaintenanceHistory maintenanceHistory = maintenanceRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
         return mapToDto(maintenanceHistory);
     }
