@@ -34,7 +34,7 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
     @Override
     @Transactional(readOnly = true)
     public PageResponse<CarIncidentsDTO> getAllIncidents(int pageNumber, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNumber,pageSize);
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
 
         Page<CarIncidents> incidentPage = carIncidentsRepository.findAll(pageable);
 
@@ -92,11 +92,11 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
     // Filters
     @Override
     public PageResponse<CarIncidentsDTO> getIncidentsByCarId(Long id, int pageNumber, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNumber,pageSize);
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
 
         Page<CarIncidents> carIncidentsPage = carIncidentsRepository.findByCar_CarId(id, pageable);
 
-        if(carIncidentsPage.isEmpty()){
+        if (carIncidentsPage.isEmpty()) {
             throw new NotFoundException(NOTFOUND + " for car with id: " + id);
         }
 

@@ -26,7 +26,7 @@ public class MaintenanceHistory {
     @Enumerated(EnumType.STRING)
     private EMAINTENANCE maintenanceType;
 
-    // Relaciones
+    // Relationships
     @ManyToOne
     @JoinColumn(name = "car_id")
     private Car car;

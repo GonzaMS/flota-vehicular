@@ -17,7 +17,7 @@ public class TravelObservartion {
 
     private String observationDesc;
 
-    // Relaciones
+    // Relationships
     @OneToOne
     @JoinColumn(name = "travel_order_id")
     private TravelOrder travelOrder;

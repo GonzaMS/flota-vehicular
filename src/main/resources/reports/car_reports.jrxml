@@ -1,0 +1,114 @@
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports
+    http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="ReporteVehiculos"
+              topMargin="20"
+              bottomMargin="20"
+              uuid="12345678-1234-1234-1234-123456789012">
+
+    <!-- Parameters -->
+    <parameter name="createdBy"/>
+
+    <!-- Fields (Usar nombres de CarDTO) -->
+    <field name="carLicensePlate"/>
+    <field name="carBrand"/>
+    <field name="carModel"/>
+    <field name="carFabricationYear"/>
+    <field name="carState" class="java.lang.Enum"/>
+    <field name="maintenanceHistories" class="java.util.List"/> <!-- Asegúrate de usar "maintenanceHistories" -->
+
+    <!-- Report Title -->
+    <title>
+        <band height="60">
+            <textField>
+                <reportElement x="0" y="0" width="555" height="30"/>
+                <textElement>
+                    <font size="20" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Reporte de Vehículos Detallado"]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="0" y="40" width="555" height="20"/>
+                <textElement>
+                    <font size="12" isBold="false"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Creado por: " + $P{createdBy}]]></textFieldExpression>
+            </textField>
+        </band>
+    </title>
+
+    <!-- Report Column Header -->
+    <columnHeader>
+        <band height="20">
+            <staticText>
+                <reportElement x="0" y="0" width="100" height="20"/>
+                <text><![CDATA[Matrícula]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="100" y="0" width="100" height="20"/>
+                <text><![CDATA[Marca]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="200" y="0" width="100" height="20"/>
+                <text><![CDATA[Modelo]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="300" y="0" width="100" height="20"/>
+                <text><![CDATA[Año]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="400" y="0" width="100" height="20"/>
+                <text><![CDATA[Estado]]></text>
+            </staticText>
+        </band>
+    </columnHeader>
+
+    <!-- Report Detail -->
+    <detail>
+        <band height="60">
+            <textField>
+                <reportElement x="0" y="0" width="100" height="20"/>
+                <textFieldExpression><![CDATA[$F{carLicensePlate}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="100" y="0" width="100" height="20"/>
+                <textFieldExpression><![CDATA[$F{carBrand}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="200" y="0" width="100" height="20"/>
+                <textFieldExpression><![CDATA[$F{carModel}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="300" y="0" width="100" height="20"/>
+                <textFieldExpression><![CDATA[$F{carFabricationYear}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="400" y="0" width="100" height="20"/>
+                <textFieldExpression><![CDATA[$F{carState}]]></textFieldExpression>
+            </textField>
+
+            <!-- Section for Maintenance History -->
+            <subreport>
+                <reportElement x="0" y="40" width="555" height="20"/>
+                <dataSourceExpression>
+                    <![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{maintenanceHistories})]]> <!-- Usa "maintenanceHistories" -->
+                </dataSourceExpression>
+                <subreportExpression>
+                    <![CDATA["src/main/resources/reports/maintenance_history_subreport.jasper"]]>
+                </subreportExpression>
+            </subreport>
+
+        </band>
+    </detail>
+
+    <!-- Footer -->
+    <pageFooter>
+        <band height="20">
+            <textField>
+                <reportElement x="0" y="0" width="555" height="20"/>
+                <textFieldExpression><![CDATA["Página " + $V{PAGE_NUMBER}]]></textFieldExpression>
+            </textField>
+        </band>
+    </pageFooter>
+</jasperReport>

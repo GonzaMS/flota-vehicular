@@ -91,7 +91,7 @@ public class lKilometersImpl implements IKilometersService {
 
         Page<Kilometers> kilometersPage = kilometersRepository.findByCar_CarId(carId, pageable);
 
-        if(kilometersPage.isEmpty()){
+        if (kilometersPage.isEmpty()) {
             throw new NotFoundException(KILOMETERS_NOT_FOUND + " for car with id: " + carId);
         }
 
@@ -116,11 +116,11 @@ public class lKilometersImpl implements IKilometersService {
                 .updateKmDate(kilometers.getUpdateKmDate())
                 .actualKm(kilometers.getActualKm())
                 .carId(kilometers.getCar().getCarId())
-        .build();
+                .build();
     }
 
     // Map DTO to Entity
-    private Kilometers mapToEntity(KilometersDTO kilometersDTO){
+    private Kilometers mapToEntity(KilometersDTO kilometersDTO) {
         return Kilometers.builder()
                 .kilometersId(kilometersDTO.getKilometersId())
                 .updateKmDate(kilometersDTO.getUpdateKmDate())

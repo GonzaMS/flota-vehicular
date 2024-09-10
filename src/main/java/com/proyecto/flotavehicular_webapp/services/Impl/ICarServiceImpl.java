@@ -1,6 +1,8 @@
 package com.proyecto.flotavehicular_webapp.services.Impl;
 
 import com.proyecto.flotavehicular_webapp.dto.CarDTO;
+import com.proyecto.flotavehicular_webapp.dto.MaintenanceDTO;
+import com.proyecto.flotavehicular_webapp.models.MaintenanceHistory;
 import com.proyecto.flotavehicular_webapp.utils.EnumUtils;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
 import com.proyecto.flotavehicular_webapp.enums.ESTATES;
@@ -14,7 +16,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ICarServiceImpl implements ICarService {
@@ -126,7 +130,7 @@ public class ICarServiceImpl implements ICarService {
         Page<Car> carPage = carRepository.findByCarBrand(brand, pageable);
 
         if (carPage.isEmpty()) {
-            throw new NotFoundException("Brand not found " +  brand);
+            throw new NotFoundException("Brand not found " + brand);
         }
 
         List<CarDTO> carDTOList = carPage.stream()
@@ -151,7 +155,7 @@ public class ICarServiceImpl implements ICarService {
         Page<Car> carPage = carRepository.findByCarModel(model, pageable);
 
         if (carPage.isEmpty()) {
-            throw new NotFoundException("Model not found " +  model);
+            throw new NotFoundException("Model not found " + model);
         }
 
         List<CarDTO> carDTOList = carPage.stream()
@@ -176,7 +180,7 @@ public class ICarServiceImpl implements ICarService {
         Page<Car> carPage = carRepository.findByCarLicensePlate(licensePlate, pageable);
 
         if (carPage.isEmpty()) {
-            throw new NotFoundException("License Plate not found " +  licensePlate);
+            throw new NotFoundException("License Plate not found " + licensePlate);
         }
 
         List<CarDTO> carDTOList = carPage.stream()
@@ -202,7 +206,22 @@ public class ICarServiceImpl implements ICarService {
                 .carModel(carDTO.getCarModel())
                 .carLicensePlate(carDTO.getCarLicensePlate())
                 .carFabricationYear(carDTO.getCarFabricationYear())
-                .carState(carDTO.getCarState())
+                .maintenanceHistories(carDTO.getMaintenanceHistories() != null ?
+                        carDTO.getMaintenanceHistories().stream()
+                                .map(this::mapToMaintenanceEntity) // Map to MaintenanceHistory entity
+                                .toList()
+                        : Collections.emptyList())
+                .build();
+    }
+
+    // Mapping MaintenanceDTO to MaintenanceHistory entity
+    private MaintenanceHistory mapToMaintenanceEntity(MaintenanceDTO maintenanceDTO) {
+        return MaintenanceHistory.builder()
+                .maintenanceId(maintenanceDTO.getMaintenanceId())
+                .maintenanceDate(maintenanceDTO.getMaintenanceDate())
+                .maintenanceDescription(maintenanceDTO.getMaintenanceDescription())
+                .maintenanceCost(maintenanceDTO.getMaintenanceCost())
+                .maintenanceType(maintenanceDTO.getMaintenanceType())
                 .build();
     }
 
@@ -214,8 +233,22 @@ public class ICarServiceImpl implements ICarService {
                 .carModel(car.getCarModel())
                 .carLicensePlate(car.getCarLicensePlate())
                 .carFabricationYear(car.getCarFabricationYear())
-                .carState(car.getCarState())
+                .maintenanceHistories(car.getMaintenanceHistories() != null ?
+                        car.getMaintenanceHistories().stream()
+                                .map(this::mapToMaintenanceDTO) // Map to MaintenanceDTO
+                                .toList()
+                        : Collections.emptyList())
                 .build();
     }
 
+    // Mapping MaintenanceHistory entity to MaintenanceDTO
+    private MaintenanceDTO mapToMaintenanceDTO(MaintenanceHistory maintenanceHistory) {
+        return MaintenanceDTO.builder()
+                .maintenanceId(maintenanceHistory.getMaintenanceId())
+                .maintenanceDate(maintenanceHistory.getMaintenanceDate())
+                .maintenanceDescription(maintenanceHistory.getMaintenanceDescription())
+                .maintenanceCost(maintenanceHistory.getMaintenanceCost())
+                .maintenanceType(maintenanceHistory.getMaintenanceType())
+                .build();
+    }
 }

@@ -4,6 +4,8 @@ import com.proyecto.flotavehicular_webapp.enums.ESTATES;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -22,4 +24,7 @@ public class Car {
 
     @Enumerated(EnumType.STRING)
     private ESTATES carState;
+
+    @OneToMany(mappedBy = "car", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<MaintenanceHistory> maintenanceHistories;
 }

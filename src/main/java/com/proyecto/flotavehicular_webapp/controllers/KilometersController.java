@@ -23,7 +23,7 @@ public class KilometersController {
     @GetMapping
     public ResponseEntity<PageResponse<KilometersDTO>> getAllKilometers(
             @RequestParam(defaultValue = "0") int pageNumber,
-            @RequestParam (defaultValue = "10") int pageSize) {
+            @RequestParam(defaultValue = "10") int pageSize) {
 
         PageResponse<KilometersDTO> kilometersPageResponse = kilometersService.getAllKilometers(pageNumber, pageSize);
 
@@ -35,16 +35,16 @@ public class KilometersController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<KilometersDTO> getKilometersById(@PathVariable Long id){
+    public ResponseEntity<KilometersDTO> getKilometersById(@PathVariable Long id) {
         KilometersDTO kilometersDTO = kilometersService.getKilometersById(id);
         return ResponseEntity.ok(kilometersDTO);
     }
 
     @PostMapping
-    public ResponseEntity<Kilometers> saveKilometers(@Valid  @RequestBody KilometersDTO kilometersDTO){
+    public ResponseEntity<Kilometers> saveKilometers(@Valid @RequestBody KilometersDTO kilometersDTO) {
         Kilometers newKilometers = kilometersService.saveKilometers(kilometersDTO);
 
-        if(newKilometers == null){
+        if (newKilometers == null) {
             return ResponseEntity.badRequest().build();
         }
 
@@ -65,7 +65,7 @@ public class KilometersController {
 
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteKilometers(@PathVariable Long id){
+    public ResponseEntity<Void> deleteKilometers(@PathVariable Long id) {
         kilometersService.deleteKilometers(id);
         return ResponseEntity.noContent().build();
     }
@@ -76,7 +76,7 @@ public class KilometersController {
     public ResponseEntity<PageResponse<KilometersDTO>> getKilometersByCarId(
             @PathVariable Long carId,
             @RequestParam(defaultValue = "0") int pageNumber,
-            @RequestParam(defaultValue = "10") int pageSize){
+            @RequestParam(defaultValue = "10") int pageSize) {
 
         PageResponse<KilometersDTO> kilometersPageResponse = kilometersService.getKilometersByCarId(carId, pageNumber, pageSize);
 

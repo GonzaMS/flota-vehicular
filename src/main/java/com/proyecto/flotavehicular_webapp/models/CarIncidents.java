@@ -22,7 +22,7 @@ public class CarIncidents {
     private Date incidentDate;
     private String incidentType;
 
-    // Relaciones
+    // Relationships
     @ManyToOne
     @JoinColumn(name = "car_id")
     private Car car;

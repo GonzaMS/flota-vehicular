@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 @Builder
 public class CarDTO {
@@ -26,4 +28,6 @@ public class CarDTO {
 
     @NotNull(message = "Car state is mandatory")
     private ESTATES carState;
+
+    private List<MaintenanceDTO> maintenanceHistories;
 }

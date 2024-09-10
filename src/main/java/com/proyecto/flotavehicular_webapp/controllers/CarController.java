@@ -44,7 +44,7 @@ public class CarController {
     public ResponseEntity<Car> saveCar(@Valid @RequestBody CarDTO carDTO) {
         Car newCar = carService.saveCar(carDTO);
 
-        if(newCar == null){
+        if (newCar == null) {
             return ResponseEntity.badRequest().build();
         }
 
@@ -64,7 +64,7 @@ public class CarController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Car> deleteCar(@PathVariable Long id){
+    public ResponseEntity<Car> deleteCar(@PathVariable Long id) {
         carService.deleteCar(id);
         return ResponseEntity.ok().build();
     }

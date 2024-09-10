@@ -24,26 +24,26 @@ public class MaintenanceController {
             @RequestParam(defaultValue = "0") int pageNumber,
             @RequestParam(defaultValue = "10") int pageSize) {
 
-            PageResponse<MaintenanceDTO> maintenanceDTOPageResponse = maintenanceService.getAllMaintenances(pageNumber,pageSize);
+        PageResponse<MaintenanceDTO> maintenanceDTOPageResponse = maintenanceService.getAllMaintenances(pageNumber, pageSize);
 
-            if (maintenanceDTOPageResponse.items().isEmpty()) {
-                return ResponseEntity.noContent().build();
-            }
+        if (maintenanceDTOPageResponse.items().isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
 
-            return ResponseEntity.ok(maintenanceDTOPageResponse);
+        return ResponseEntity.ok(maintenanceDTOPageResponse);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<MaintenanceDTO> getMaintenanceById(@PathVariable Long id){
+    public ResponseEntity<MaintenanceDTO> getMaintenanceById(@PathVariable Long id) {
         MaintenanceDTO maintenance = maintenanceService.getMaintenanceById(id);
         return ResponseEntity.ok(maintenance);
     }
 
     @PostMapping
-    public ResponseEntity<MaintenanceHistory> saveMaintenance(@Valid @RequestBody MaintenanceDTO maintenanceDTO){
+    public ResponseEntity<MaintenanceHistory> saveMaintenance(@Valid @RequestBody MaintenanceDTO maintenanceDTO) {
         MaintenanceHistory newMaintenance = maintenanceService.saveMaintenance(maintenanceDTO);
 
-        if(newMaintenance == null){
+        if (newMaintenance == null) {
             return ResponseEntity.badRequest().build();
         }
 
@@ -53,7 +53,7 @@ public class MaintenanceController {
     @PutMapping("/{id}")
     public ResponseEntity<MaintenanceDTO> updateMaintenance(
             @PathVariable Long id,
-            @Valid @RequestBody MaintenanceDTO maintenanceDTO){
+            @Valid @RequestBody MaintenanceDTO maintenanceDTO) {
 
         maintenanceService.updateMaintenance(id, maintenanceDTO);
 
@@ -63,7 +63,7 @@ public class MaintenanceController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<MaintenanceHistory> deleteMaintenance(@PathVariable  Long id){
+    public ResponseEntity<MaintenanceHistory> deleteMaintenance(@PathVariable Long id) {
         maintenanceService.deleteMaintenance(id);
         return ResponseEntity.ok().build();
     }
@@ -73,7 +73,7 @@ public class MaintenanceController {
     public ResponseEntity<PageResponse<MaintenanceDTO>> getMaintenancesByCarId(
             @PathVariable Long carId,
             @RequestParam(defaultValue = "0") int pageNumber,
-            @RequestParam(defaultValue = "10") int pageSize){
+            @RequestParam(defaultValue = "10") int pageSize) {
 
         PageResponse<MaintenanceDTO> maintenanceDTOPageResponse = maintenanceService.getMaintenanceByCarId(carId, pageNumber, pageSize);
 

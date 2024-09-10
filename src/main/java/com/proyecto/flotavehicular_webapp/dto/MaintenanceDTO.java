@@ -11,6 +11,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Builder
@@ -33,4 +34,7 @@ public class MaintenanceDTO {
 
     @NotNull(message = "Car id is mandatory")
     private Long carId;
+
+    private List<MaintenanceDTO> maintenanceHistory;
+
 }

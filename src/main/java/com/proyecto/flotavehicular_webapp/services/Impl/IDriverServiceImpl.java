@@ -76,7 +76,6 @@ public class IDriverServiceImpl implements IDriverService {
     }
 
 
-
     @Override
     @Transactional
     public void deleteDriver(Long id) {
@@ -138,7 +137,7 @@ public class IDriverServiceImpl implements IDriverService {
     @Transactional(readOnly = true)
     public PageResponse<DriverDTO> getDriverByState(String state, int pageNumber, int pageSize) {
         Pageable pageable = PageRequest.of(pageNumber, pageSize);
-        if(!EnumUtils.isValidState(state)) {
+        if (!EnumUtils.isValidState(state)) {
             throw new NotFoundException("State not found: " + state);
         }
         ESTATES driverState = ESTATES.valueOf(state);

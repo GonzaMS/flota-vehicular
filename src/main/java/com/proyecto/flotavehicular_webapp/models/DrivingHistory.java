@@ -20,7 +20,7 @@ public class DrivingHistory {
     private Date drivingDate;
     private Double kmDriven;
 
-    // Relaciones
+    // Relationships
     @ManyToOne
     @JoinColumn(name = "dirver_id")
     private Driver driver;

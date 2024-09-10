@@ -20,7 +20,7 @@ public class PerformanceEvaluation {
     private Date performanceDate;
     private Integer performancePoints;
 
-    // Relaciones
+    // Relationships
     @ManyToOne
     @JoinColumn(name = "driver_id")
     private Driver driver;

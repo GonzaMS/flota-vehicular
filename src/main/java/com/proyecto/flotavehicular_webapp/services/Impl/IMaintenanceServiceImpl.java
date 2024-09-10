@@ -24,7 +24,7 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
     private final ICarRepository carRepository;
 
 
-    private static final String NOTFOUND  = "Maintenance not found";
+    private static final String NOTFOUND = "Maintenance not found";
 
     public IMaintenanceServiceImpl(IMaintenanceRepository maintenanceRepository, ICarRepository carRepository) {
         this.maintenanceRepository = maintenanceRepository;
@@ -33,8 +33,8 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<MaintenanceDTO> getAllMaintenances(int pageNumber,int pageSize) {
-        Pageable pageable = PageRequest.of(pageNumber,pageSize);
+    public PageResponse<MaintenanceDTO> getAllMaintenances(int pageNumber, int pageSize) {
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
         Page<MaintenanceHistory> maintenanceHistoryPage = maintenanceRepository.findAll(pageable);
 
         List<MaintenanceDTO> maintenanceDTOList = maintenanceHistoryPage.stream()
@@ -92,11 +92,11 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
     @Override
     @Transactional(readOnly = true)
     public PageResponse<MaintenanceDTO> getMaintenanceByCarId(Long id, int pageNumber, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNumber,pageSize);
+        Pageable pageable = PageRequest.of(pageNumber, pageSize);
 
         Page<MaintenanceHistory> maintenanceHistoryPage = maintenanceRepository.findByCar_CarId(id, pageable);
 
-        if(maintenanceHistoryPage.isEmpty()){
+        if (maintenanceHistoryPage.isEmpty()) {
             throw new NotFoundException(NOTFOUND + " for car with id: " + id);
         }
 
@@ -116,7 +116,7 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
 
     // Mappers
     // Map entity to DTO
-    private MaintenanceDTO mapToDto(MaintenanceHistory maintenanceHistory){
+    private MaintenanceDTO mapToDto(MaintenanceHistory maintenanceHistory) {
         return MaintenanceDTO.builder()
                 .maintenanceId(maintenanceHistory.getMaintenanceId())
                 .maintenanceDate(maintenanceHistory.getMaintenanceDate())
@@ -128,7 +128,7 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
     }
 
     // Map DTO to entity
-    private  MaintenanceHistory mapToEntity(MaintenanceDTO maintenanceDTO){
+    private MaintenanceHistory mapToEntity(MaintenanceDTO maintenanceDTO) {
         return MaintenanceHistory.builder()
                 .maintenanceId(maintenanceDTO.getMaintenanceId())
                 .maintenanceDate(maintenanceDTO.getMaintenanceDate())

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports
+    http://jasperreports.sourceforge.net/xsd/jasperreport.xsd"
+              name="maintenance_history_subreport"
+              topMargin="20"
+              bottomMargin="20">
+
+    <!-- Fields from MaintenanceDTO -->
+    <field name="maintenanceDate" class="java.util.Date"/>
+    <field name="maintenanceDescription"/>
+    <field name="maintenanceCost" class="java.lang.Double"/>
+    <field name="maintenanceType"/>
+
+    <!-- Title Band -->
+    <title>
+        <band height="30">
+            <staticText>
+                <reportElement x="0" y="0" width="555" height="30"/>
+                <text><![CDATA[Historial de Mantenimiento]]></text>
+            </staticText>
+        </band>
+    </title>
+
+    <!-- Column Header -->
+    <columnHeader>
+        <band height="20">
+            <staticText>
+                <reportElement x="0" y="0" width="100" height="20"/>
+                <text><![CDATA[Fecha]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="100" y="0" width="255" height="20"/>
+                <text><![CDATA[Descripción]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="355" y="0" width="100" height="20"/>
+                <text><![CDATA[Costo]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="455" y="0" width="100" height="20"/>
+                <text><![CDATA[Tipo de Mantenimiento]]></text>
+            </staticText>
+        </band>
+    </columnHeader>
+
+    <!-- Detail Band -->
+    <detail>
+        <band height="20">
+            <textField>
+                <reportElement x="0" y="0" width="100" height="20"/>
+                <textFieldExpression><![CDATA[$F{maintenanceDate}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="100" y="0" width="255" height="20"/>
+                <textFieldExpression><![CDATA[$F{maintenanceDescription}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="355" y="0" width="100" height="20"/>
+                <textFieldExpression><![CDATA[$F{maintenanceCost}]]></textFieldExpression>
+            </textField>
+            <textField>
+                <reportElement x="455" y="0" width="100" height="20"/>
+                <textFieldExpression><![CDATA[$F{maintenanceType}]]></textFieldExpression>
+            </textField>
+        </band>
+    </detail>
+</jasperReport>

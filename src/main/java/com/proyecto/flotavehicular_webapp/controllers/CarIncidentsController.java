@@ -14,35 +14,35 @@ import org.springframework.web.bind.annotation.*;
 public class CarIncidentsController {
     private final ICarIncidentsService carIncidentsService;
 
-    public CarIncidentsController(ICarIncidentsService carIncidentsService){
+    public CarIncidentsController(ICarIncidentsService carIncidentsService) {
         this.carIncidentsService = carIncidentsService;
     }
 
     @GetMapping
     public ResponseEntity<PageResponse<CarIncidentsDTO>> getAllIncidents(
             @RequestParam(defaultValue = "0") int pageNumber,
-            @RequestParam(defaultValue = "10") int pageSize){
+            @RequestParam(defaultValue = "10") int pageSize) {
 
-            PageResponse<CarIncidentsDTO> incidents = carIncidentsService.getAllIncidents(pageNumber, pageSize);
+        PageResponse<CarIncidentsDTO> incidents = carIncidentsService.getAllIncidents(pageNumber, pageSize);
 
-            if (incidents.items().isEmpty()) {
-                return ResponseEntity.noContent().build();
-            }
+        if (incidents.items().isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
 
-            return ResponseEntity.ok(incidents);
+        return ResponseEntity.ok(incidents);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CarIncidentsDTO> getIncidentById(@PathVariable  Long id){
+    public ResponseEntity<CarIncidentsDTO> getIncidentById(@PathVariable Long id) {
         CarIncidentsDTO incident = carIncidentsService.getIncidentById(id);
         return ResponseEntity.ok(incident);
     }
 
     @PostMapping
-    public ResponseEntity<CarIncidents> saveIncident(@Valid @RequestBody CarIncidentsDTO carIncidentsDTO){
+    public ResponseEntity<CarIncidents> saveIncident(@Valid @RequestBody CarIncidentsDTO carIncidentsDTO) {
         CarIncidents newIncident = carIncidentsService.saveIncident(carIncidentsDTO);
 
-        if(newIncident == null){
+        if (newIncident == null) {
             return ResponseEntity.badRequest().build();
         }
 
@@ -52,7 +52,7 @@ public class CarIncidentsController {
     @PutMapping("/{id}")
     public ResponseEntity<CarIncidentsDTO> updateIncident(
             @PathVariable Long id,
-            @Valid @RequestBody CarIncidentsDTO carIncidentsDTO){
+            @Valid @RequestBody CarIncidentsDTO carIncidentsDTO) {
 
         carIncidentsService.updateIncident(id, carIncidentsDTO);
 
@@ -62,7 +62,7 @@ public class CarIncidentsController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<CarIncidents> deleteMaintenance(@PathVariable Long id){
+    public ResponseEntity<CarIncidents> deleteMaintenance(@PathVariable Long id) {
         carIncidentsService.deleteIncident(id);
         return ResponseEntity.ok().build();
     }
@@ -72,7 +72,7 @@ public class CarIncidentsController {
     public ResponseEntity<PageResponse<CarIncidentsDTO>> getIncidentsByCarId(
             @PathVariable Long carId,
             @RequestParam(defaultValue = "0") int pageNumber,
-            @RequestParam(defaultValue = "10") int pageSize){
+            @RequestParam(defaultValue = "10") int pageSize) {
 
         PageResponse<CarIncidentsDTO> carIncidentsDTOPageResponse = carIncidentsService.getIncidentsByCarId(carId, pageNumber, pageSize);
 

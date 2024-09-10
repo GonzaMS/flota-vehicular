@@ -22,7 +22,7 @@ public class DriverIncidents {
     private Date incidentDate;
     private String incidentType;
 
-    // Relaciones
+    // Relationships
     @ManyToOne
     @JoinColumn(name = "driver_id")
     private Driver driver;
