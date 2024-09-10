@@ -15,7 +15,7 @@ import java.util.Date;
 public class Driver {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private long driverId;
+    private Long driverId;
 
     private String driverName;
     private String driverLicense;

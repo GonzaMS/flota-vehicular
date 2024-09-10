@@ -10,7 +10,7 @@ import lombok.Data;
 @Builder
 public class CarDTO {
 
-    private long carId;
+    private Long carId;
 
     @NotBlank(message = "License plate is mandatory")
     private String carBrand;
