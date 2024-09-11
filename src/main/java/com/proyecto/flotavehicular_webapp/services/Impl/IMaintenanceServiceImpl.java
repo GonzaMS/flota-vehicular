@@ -8,6 +8,8 @@ import com.proyecto.flotavehicular_webapp.repositories.ICarRepository;
 import com.proyecto.flotavehicular_webapp.repositories.IMaintenanceRepository;
 import com.proyecto.flotavehicular_webapp.services.IMaintenanceService;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,8 +25,9 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
     private final IMaintenanceRepository maintenanceRepository;
     private final ICarRepository carRepository;
 
-
     private static final String NOTFOUND = "Maintenance not found";
+
+    private static final Logger logger = LoggerFactory.getLogger(IMaintenanceServiceImpl.class);
 
     public IMaintenanceServiceImpl(IMaintenanceRepository maintenanceRepository, ICarRepository carRepository) {
         this.maintenanceRepository = maintenanceRepository;
@@ -34,21 +37,26 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
     @Override
     @Transactional(readOnly = true)
     public PageResponse<MaintenanceDTO> getAllMaintenances(int pageNumber, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
-        Page<MaintenanceHistory> maintenanceHistoryPage = maintenanceRepository.findAll(pageable);
+        try {
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+            Page<MaintenanceHistory> maintenanceHistoryPage = maintenanceRepository.findAll(pageable);
 
-        List<MaintenanceDTO> maintenanceDTOList = maintenanceHistoryPage.stream()
-                .map(this::mapToDto)
-                .toList();
+            List<MaintenanceDTO> maintenanceDTOList = maintenanceHistoryPage.stream()
+                    .map(this::mapToDto)
+                    .toList();
 
-        return PageResponse.of(
-                maintenanceDTOList,
-                maintenanceHistoryPage.getNumber(),
-                maintenanceHistoryPage.getSize(),
-                maintenanceHistoryPage.getTotalElements(),
-                maintenanceHistoryPage.getTotalPages(),
-                maintenanceHistoryPage.isLast()
-        );
+            return PageResponse.of(
+                    maintenanceDTOList,
+                    maintenanceHistoryPage.getNumber(),
+                    maintenanceHistoryPage.getSize(),
+                    maintenanceHistoryPage.getTotalElements(),
+                    maintenanceHistoryPage.getTotalPages(),
+                    maintenanceHistoryPage.isLast()
+            );
+        } catch (Exception e) {
+            logger.error("Error getting all maintenances: {}", e.getMessage());
+            throw new NotFoundException("Error getting all maintenances");
+        }
     }
 
     @Override
@@ -61,25 +69,38 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
     @Override
     @Transactional
     public MaintenanceHistory saveMaintenance(MaintenanceDTO maintenanceDTO) {
-        Car car = carRepository.findById(maintenanceDTO.getCarId()).orElseThrow(() -> new NotFoundException("Car not found"));
+        try {
+            Car car = carRepository.findById(maintenanceDTO.getCarId()).orElseThrow(() -> new NotFoundException("Car not found"));
 
-        MaintenanceHistory maintenanceHistory = mapToEntity(maintenanceDTO);
-        maintenanceHistory.setCar(car);
+            MaintenanceHistory maintenanceHistory = mapToEntity(maintenanceDTO);
+            maintenanceHistory.setCar(car);
 
-        return maintenanceRepository.save(maintenanceHistory);
+            return maintenanceRepository.save(maintenanceHistory);
+
+        } catch (Exception e) {
+            logger.error("Error saving maintenance: {}", e.getMessage());
+            throw new NotFoundException("Error saving maintenance");
+        }
     }
 
     @Override
     @Transactional
     public void updateMaintenance(Long id, MaintenanceDTO maintenanceDTO) {
-        MaintenanceHistory maintenanceHistory = maintenanceRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
+        try {
+            MaintenanceHistory maintenanceHistory = maintenanceRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
 
-        maintenanceHistory.setMaintenanceDate(maintenanceDTO.getMaintenanceDate());
-        maintenanceHistory.setMaintenanceDescription(maintenanceDTO.getMaintenanceDescription());
-        maintenanceHistory.setMaintenanceCost(maintenanceDTO.getMaintenanceCost());
-        maintenanceHistory.setMaintenanceType(maintenanceDTO.getMaintenanceType());
+            maintenanceHistory.setMaintenanceDate(maintenanceDTO.getMaintenanceDate());
+            maintenanceHistory.setMaintenanceDescription(maintenanceDTO.getMaintenanceDescription());
+            maintenanceHistory.setMaintenanceCost(maintenanceDTO.getMaintenanceCost());
+            maintenanceHistory.setMaintenanceType(maintenanceDTO.getMaintenanceType());
 
-        maintenanceRepository.save(maintenanceHistory);
+            maintenanceRepository.save(maintenanceHistory);
+
+        } catch (Exception e) {
+            logger.error("Error updating maintenance: {}", e.getMessage());
+            throw new NotFoundException("Error updating maintenance");
+        }
+
     }
 
     @Override
@@ -92,26 +113,31 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
     @Override
     @Transactional(readOnly = true)
     public PageResponse<MaintenanceDTO> getMaintenanceByCarId(Long id, int pageNumber, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        try {
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
 
-        Page<MaintenanceHistory> maintenanceHistoryPage = maintenanceRepository.findByCar_CarId(id, pageable);
+            Page<MaintenanceHistory> maintenanceHistoryPage = maintenanceRepository.findByCar_CarId(id, pageable);
 
-        if (maintenanceHistoryPage.isEmpty()) {
-            throw new NotFoundException(NOTFOUND + " for car with id: " + id);
+            if (maintenanceHistoryPage.isEmpty()) {
+                throw new NotFoundException(NOTFOUND + " for car with id: " + id);
+            }
+
+            List<MaintenanceDTO> maintenanceDTOList = maintenanceHistoryPage.stream()
+                    .map(this::mapToDto)
+                    .toList();
+
+            return PageResponse.of(
+                    maintenanceDTOList,
+                    maintenanceHistoryPage.getNumber(),
+                    maintenanceHistoryPage.getSize(),
+                    maintenanceHistoryPage.getTotalElements(),
+                    maintenanceHistoryPage.getTotalPages(),
+                    maintenanceHistoryPage.isLast()
+            );
+        } catch (Exception e) {
+            logger.error("Error getting maintenance by car id: {}", e.getMessage());
+            throw new NotFoundException("Error getting maintenance by car id");
         }
-
-        List<MaintenanceDTO> maintenanceDTOList = maintenanceHistoryPage.stream()
-                .map(this::mapToDto)
-                .toList();
-
-        return PageResponse.of(
-                maintenanceDTOList,
-                maintenanceHistoryPage.getNumber(),
-                maintenanceHistoryPage.getSize(),
-                maintenanceHistoryPage.getTotalElements(),
-                maintenanceHistoryPage.getTotalPages(),
-                maintenanceHistoryPage.isLast()
-        );
     }
 
     // Mappers

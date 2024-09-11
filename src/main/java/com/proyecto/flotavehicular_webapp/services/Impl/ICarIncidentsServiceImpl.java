@@ -8,6 +8,8 @@ import com.proyecto.flotavehicular_webapp.repositories.ICarIncidentsRepository;
 import com.proyecto.flotavehicular_webapp.repositories.ICarRepository;
 import com.proyecto.flotavehicular_webapp.services.ICarIncidentsService;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +27,7 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
 
     private static final String NOTFOUND = "CarIncidents not found";
 
+    private static final Logger logger = LoggerFactory.getLogger(ICarIncidentsServiceImpl.class);
 
     public ICarIncidentsServiceImpl(ICarIncidentsRepository incidentRepository, ICarRepository carRepository) {
         this.carIncidentsRepository = incidentRepository;
@@ -34,21 +37,28 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
     @Override
     @Transactional(readOnly = true)
     public PageResponse<CarIncidentsDTO> getAllIncidents(int pageNumber, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        try {
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
 
-        Page<CarIncidents> incidentPage = carIncidentsRepository.findAll(pageable);
+            Page<CarIncidents> incidentPage = carIncidentsRepository.findAll(pageable);
 
-        List<CarIncidentsDTO> carIncidentsDTOList = incidentPage.stream()
-                .map(this::mapToDTO)
-                .toList();
+            List<CarIncidentsDTO> carIncidentsDTOList = incidentPage.stream()
+                    .map(this::mapToDTO)
+                    .toList();
 
-        return PageResponse.of(
-                carIncidentsDTOList,
-                incidentPage.getNumber(),
-                incidentPage.getSize(),
-                incidentPage.getTotalElements(),
-                incidentPage.getTotalPages(),
-                incidentPage.isLast());
+            return PageResponse.of(
+                    carIncidentsDTOList,
+                    incidentPage.getNumber(),
+                    incidentPage.getSize(),
+                    incidentPage.getTotalElements(),
+                    incidentPage.getTotalPages(),
+                    incidentPage.isLast());
+
+        } catch (Exception e) {
+            logger.error("Error getting all incidents: {}", e.getMessage());
+            throw new NotFoundException("Error getting all incidents");
+        }
+
     }
 
     @Override
@@ -61,25 +71,35 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
     @Override
     @Transactional
     public CarIncidents saveIncident(CarIncidentsDTO carIncidentsDTO) {
+        try {
+            Car car = carRepository.findById(carIncidentsDTO.getCarId()).orElseThrow(() -> new NotFoundException("Car not found"));
 
-        Car car = carRepository.findById(carIncidentsDTO.getCarId()).orElseThrow(() -> new NotFoundException("Car not found"));
+            CarIncidents carIncidents = mapToEntity(carIncidentsDTO);
+            carIncidents.setCar(car);
 
-        CarIncidents carIncidents = mapToEntity(carIncidentsDTO);
-        carIncidents.setCar(car);
-
-        return carIncidentsRepository.save(carIncidents);
+            return carIncidentsRepository.save(carIncidents);
+        } catch (Exception e) {
+            logger.error("Error saving incident: {}", e.getMessage());
+            throw new NotFoundException("Error saving incident");
+        }
     }
 
     @Override
     @Transactional
     public void updateIncident(Long id, CarIncidentsDTO carIncidentsDTO) {
-        CarIncidents carIncidents = carIncidentsRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
+        try {
+            CarIncidents carIncidents = carIncidentsRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
 
-        carIncidents.setIncidentDate(carIncidentsDTO.getIncidentDate());
-        carIncidents.setIncidentDescription(carIncidentsDTO.getIncidentDescription());
-        carIncidents.setIncidentType(carIncidentsDTO.getIncidentType());
+            carIncidents.setIncidentDate(carIncidentsDTO.getIncidentDate());
+            carIncidents.setIncidentDescription(carIncidentsDTO.getIncidentDescription());
+            carIncidents.setIncidentType(carIncidentsDTO.getIncidentType());
 
-        carIncidentsRepository.save(carIncidents);
+            carIncidentsRepository.save(carIncidents);
+        } catch (Exception e) {
+            logger.error("Error updating incident: {}", e.getMessage());
+            throw new NotFoundException("Error updating incident");
+        }
+
     }
 
     @Override
@@ -92,26 +112,32 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
     // Filters
     @Override
     public PageResponse<CarIncidentsDTO> getIncidentsByCarId(Long id, int pageNumber, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        try {
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
 
-        Page<CarIncidents> carIncidentsPage = carIncidentsRepository.findByCar_CarId(id, pageable);
+            Page<CarIncidents> carIncidentsPage = carIncidentsRepository.findByCar_CarId(id, pageable);
 
-        if (carIncidentsPage.isEmpty()) {
-            throw new NotFoundException(NOTFOUND + " for car with id: " + id);
+            if (carIncidentsPage.isEmpty()) {
+                throw new NotFoundException(NOTFOUND + " for car with id: " + id);
+            }
+
+            List<CarIncidentsDTO> carIncidentsDTOList = carIncidentsPage.stream()
+                    .map(this::mapToDTO)
+                    .toList();
+
+            return PageResponse.of(
+                    carIncidentsDTOList,
+                    carIncidentsPage.getNumber(),
+                    carIncidentsPage.getSize(),
+                    carIncidentsPage.getTotalElements(),
+                    carIncidentsPage.getTotalPages(),
+                    carIncidentsPage.isLast()
+            );
+        } catch (Exception e) {
+            logger.error("Error getting incidents by car id: {}", e.getMessage());
+            throw new NotFoundException("Error getting incidents by car id");
         }
 
-        List<CarIncidentsDTO> carIncidentsDTOList = carIncidentsPage.stream()
-                .map(this::mapToDTO)
-                .toList();
-
-        return PageResponse.of(
-                carIncidentsDTOList,
-                carIncidentsPage.getNumber(),
-                carIncidentsPage.getSize(),
-                carIncidentsPage.getTotalElements(),
-                carIncidentsPage.getTotalPages(),
-                carIncidentsPage.isLast()
-        );
     }
 
     // Mappers

@@ -10,6 +10,8 @@ import com.proyecto.flotavehicular_webapp.exceptions.NotFoundException;
 import com.proyecto.flotavehicular_webapp.models.Car;
 import com.proyecto.flotavehicular_webapp.repositories.ICarRepository;
 import com.proyecto.flotavehicular_webapp.services.ICarService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class ICarServiceImpl implements ICarService {
@@ -27,6 +28,9 @@ public class ICarServiceImpl implements ICarService {
 
     private static final String NOTFOUND = "Car not found";
 
+    private static final Logger logger = LoggerFactory.getLogger(ICarServiceImpl.class);
+
+
     public ICarServiceImpl(ICarRepository carRepository) {
         this.carRepository = carRepository;
     }
@@ -34,22 +38,27 @@ public class ICarServiceImpl implements ICarService {
     @Override
     @Transactional(readOnly = true)
     public PageResponse<CarDTO> getAllCars(int pageNumber, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
-        Page<Car> carPage = carRepository.findAll(pageable);
+        try {
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+            Page<Car> carPage = carRepository.findAll(pageable);
 
-        List<CarDTO> carDTOList = carPage.stream()
-                .map(this::mapToDTO)
-                .toList();
+            List<CarDTO> carDTOList = carPage.stream()
+                    .map(this::mapToDTO)
+                    .toList();
 
-        return PageResponse.of(
-                carDTOList,
-                carPage.getNumber(),
-                carPage.getSize(),
-                carPage.getTotalElements(),
-                carPage.getTotalPages(),
-                carPage.isLast());
+            return PageResponse.of(
+                    carDTOList,
+                    carPage.getNumber(),
+                    carPage.getSize(),
+                    carPage.getTotalElements(),
+                    carPage.getTotalPages(),
+                    carPage.isLast());
+        } catch (Exception e) {
+            logger.error("Error getting all cars: {}", e.getMessage());
+            throw new NotFoundException("Error getting all cars");
+        }
+
     }
-
 
     @Override
     @Transactional(readOnly = true)
@@ -61,22 +70,34 @@ public class ICarServiceImpl implements ICarService {
     @Override
     @Transactional
     public Car saveCar(CarDTO carDTO) {
-        Car car = mapToEntity(carDTO);
-        return carRepository.save(car);
+        try {
+            Car car = mapToEntity(carDTO);
+            return carRepository.save(car);
+        } catch (Exception e) {
+            logger.error("Error saving car: {}", e.getMessage());
+            throw new NotFoundException("Error saving car");
+        }
+
     }
 
     @Override
     @Transactional
     public void updateCar(Long id, CarDTO carDTO) {
-        Car car = carRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
+        try {
+            Car car = carRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
 
-        car.setCarBrand(carDTO.getCarBrand());
-        car.setCarModel(carDTO.getCarModel());
-        car.setCarLicensePlate(carDTO.getCarLicensePlate());
-        car.setCarFabricationYear(carDTO.getCarFabricationYear());
-        car.setCarState(carDTO.getCarState());
+            car.setCarBrand(carDTO.getCarBrand());
+            car.setCarModel(carDTO.getCarModel());
+            car.setCarLicensePlate(carDTO.getCarLicensePlate());
+            car.setCarFabricationYear(carDTO.getCarFabricationYear());
+            car.setCarState(carDTO.getCarState());
 
-        carRepository.save(car);
+            carRepository.save(car);
+
+        } catch (Exception e) {
+            logger.error("Error updating car: {}", e.getMessage());
+            throw new NotFoundException("Error updating car");
+        }
     }
 
     @Override
@@ -89,112 +110,137 @@ public class ICarServiceImpl implements ICarService {
     @Override
     @Transactional
     public void deactivateCar(Long id) {
-        Car car = carRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
-        car.setCarState(ESTATES.INACTIVE);
-        carRepository.save(car);
+        try {
+            Car car = carRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
+            car.setCarState(ESTATES.INACTIVE);
+            carRepository.save(car);
+        } catch (Exception e) {
+            logger.error("Error deactivating car: {}", e.getMessage());
+            throw new NotFoundException("Error deactivating car");
+        }
     }
 
     // Filters
     @Override
     @Transactional(readOnly = true)
     public PageResponse<CarDTO> getCarByState(String state, int pageNumber, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        try {
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
 
-        if (!EnumUtils.isValidState(state)) {
-            throw new NotFoundException("State not found " + state);
+            if (!EnumUtils.isValidState(state)) {
+                throw new NotFoundException("State not found " + state);
+            }
+
+            ESTATES carState = ESTATES.valueOf(state);
+
+            Page<Car> carPage = carRepository.findByCarState(carState, pageable);
+
+            List<CarDTO> carDTOList = carPage.stream()
+                    .map(this::mapToDTO)
+                    .toList();
+
+            return PageResponse.of(
+                    carDTOList,
+                    carPage.getNumber(),
+                    carPage.getSize(),
+                    carPage.getTotalElements(),
+                    carPage.getTotalPages(),
+                    carPage.isLast()
+            );
+        } catch (Exception e) {
+            logger.error("Error getting all incidents: {}", e.getMessage());
+            throw new NotFoundException("Error getting all incidents");
         }
-
-        ESTATES carState = ESTATES.valueOf(state);
-
-        Page<Car> carPage = carRepository.findByCarState(carState, pageable);
-
-        List<CarDTO> carDTOList = carPage.stream()
-                .map(this::mapToDTO)
-                .toList();
-
-        return PageResponse.of(
-                carDTOList,
-                carPage.getNumber(),
-                carPage.getSize(),
-                carPage.getTotalElements(),
-                carPage.getTotalPages(),
-                carPage.isLast()
-        );
     }
 
     @Override
     @Transactional(readOnly = true)
     public PageResponse<CarDTO> getCarByBrand(String brand, int pageNumber, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        try {
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
 
-        Page<Car> carPage = carRepository.findByCarBrand(brand, pageable);
+            Page<Car> carPage = carRepository.findByCarBrand(brand, pageable);
 
-        if (carPage.isEmpty()) {
-            throw new NotFoundException("Brand not found " + brand);
+            if (carPage.isEmpty()) {
+                throw new NotFoundException("Brand not found " + brand);
+            }
+
+            List<CarDTO> carDTOList = carPage.stream()
+                    .map(this::mapToDTO)
+                    .toList();
+
+            return PageResponse.of(
+                    carDTOList,
+                    carPage.getNumber(),
+                    carPage.getSize(),
+                    carPage.getTotalElements(),
+                    carPage.getTotalPages(),
+                    carPage.isLast()
+            );
+        } catch (Exception e) {
+            logger.error("Error getting all incidents: {}", e.getMessage());
+            throw new NotFoundException("Error getting all incidents");
         }
-
-        List<CarDTO> carDTOList = carPage.stream()
-                .map(this::mapToDTO)
-                .toList();
-
-        return PageResponse.of(
-                carDTOList,
-                carPage.getNumber(),
-                carPage.getSize(),
-                carPage.getTotalElements(),
-                carPage.getTotalPages(),
-                carPage.isLast()
-        );
     }
 
     @Override
     @Transactional(readOnly = true)
     public PageResponse<CarDTO> getCarByModel(String model, int pageNumber, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        try {
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
 
-        Page<Car> carPage = carRepository.findByCarModel(model, pageable);
+            Page<Car> carPage = carRepository.findByCarModel(model, pageable);
 
-        if (carPage.isEmpty()) {
-            throw new NotFoundException("Model not found " + model);
+            if (carPage.isEmpty()) {
+                throw new NotFoundException("Model not found " + model);
+            }
+
+            List<CarDTO> carDTOList = carPage.stream()
+                    .map(this::mapToDTO)
+                    .toList();
+
+            return PageResponse.of(
+                    carDTOList,
+                    carPage.getNumber(),
+                    carPage.getSize(),
+                    carPage.getTotalElements(),
+                    carPage.getTotalPages(),
+                    carPage.isLast()
+            );
+        } catch (Exception e) {
+            logger.error("Error getting all incidents: {}", e.getMessage());
+            throw new NotFoundException("Error getting all incidents");
         }
-
-        List<CarDTO> carDTOList = carPage.stream()
-                .map(this::mapToDTO)
-                .toList();
-
-        return PageResponse.of(
-                carDTOList,
-                carPage.getNumber(),
-                carPage.getSize(),
-                carPage.getTotalElements(),
-                carPage.getTotalPages(),
-                carPage.isLast()
-        );
     }
 
     @Override
     @Transactional(readOnly = true)
     public PageResponse<CarDTO> getCarByLicensePlate(String licensePlate, int pageNumber, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        try {
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
 
-        Page<Car> carPage = carRepository.findByCarLicensePlate(licensePlate, pageable);
+            Page<Car> carPage = carRepository.findByCarLicensePlate(licensePlate, pageable);
 
-        if (carPage.isEmpty()) {
-            throw new NotFoundException("License Plate not found " + licensePlate);
+            if (carPage.isEmpty()) {
+                throw new NotFoundException("License Plate not found " + licensePlate);
+            }
+
+            List<CarDTO> carDTOList = carPage.stream()
+                    .map(this::mapToDTO)
+                    .toList();
+
+            return PageResponse.of(
+                    carDTOList,
+                    carPage.getNumber(),
+                    carPage.getSize(),
+                    carPage.getTotalElements(),
+                    carPage.getTotalPages(),
+                    carPage.isLast()
+            );
+        } catch (Exception e) {
+            logger.error("Error getting all incidents: {}", e.getMessage());
+            throw new NotFoundException("Error getting all incidents");
         }
-
-        List<CarDTO> carDTOList = carPage.stream()
-                .map(this::mapToDTO)
-                .toList();
-
-        return PageResponse.of(
-                carDTOList,
-                carPage.getNumber(),
-                carPage.getSize(),
-                carPage.getTotalElements(),
-                carPage.getTotalPages(),
-                carPage.isLast()
-        );
     }
 
     // Mappers
@@ -206,6 +252,7 @@ public class ICarServiceImpl implements ICarService {
                 .carModel(carDTO.getCarModel())
                 .carLicensePlate(carDTO.getCarLicensePlate())
                 .carFabricationYear(carDTO.getCarFabricationYear())
+                .carState(carDTO.getCarState())
                 .maintenanceHistories(carDTO.getMaintenanceHistories() != null ?
                         carDTO.getMaintenanceHistories().stream()
                                 .map(this::mapToMaintenanceEntity) // Map to MaintenanceHistory entity
@@ -218,6 +265,7 @@ public class ICarServiceImpl implements ICarService {
     private MaintenanceHistory mapToMaintenanceEntity(MaintenanceDTO maintenanceDTO) {
         return MaintenanceHistory.builder()
                 .maintenanceId(maintenanceDTO.getMaintenanceId())
+                .car(Car.builder().carId(maintenanceDTO.getCarId()).build())
                 .maintenanceDate(maintenanceDTO.getMaintenanceDate())
                 .maintenanceDescription(maintenanceDTO.getMaintenanceDescription())
                 .maintenanceCost(maintenanceDTO.getMaintenanceCost())
@@ -232,6 +280,7 @@ public class ICarServiceImpl implements ICarService {
                 .carBrand(car.getCarBrand())
                 .carModel(car.getCarModel())
                 .carLicensePlate(car.getCarLicensePlate())
+                .carState(car.getCarState())
                 .carFabricationYear(car.getCarFabricationYear())
                 .maintenanceHistories(car.getMaintenanceHistories() != null ?
                         car.getMaintenanceHistories().stream()
@@ -245,6 +294,7 @@ public class ICarServiceImpl implements ICarService {
     private MaintenanceDTO mapToMaintenanceDTO(MaintenanceHistory maintenanceHistory) {
         return MaintenanceDTO.builder()
                 .maintenanceId(maintenanceHistory.getMaintenanceId())
+                .carId(maintenanceHistory.getCar().getCarId())
                 .maintenanceDate(maintenanceHistory.getMaintenanceDate())
                 .maintenanceDescription(maintenanceHistory.getMaintenanceDescription())
                 .maintenanceCost(maintenanceHistory.getMaintenanceCost())
