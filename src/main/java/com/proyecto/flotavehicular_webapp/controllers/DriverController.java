@@ -63,11 +63,11 @@ public class DriverController {
     }
 
     // Filters
-    @GetMapping("/state")
+    @GetMapping("/state/{state}")
     public ResponseEntity<PageResponse<DriverDTO>> getDriverByState(
             @RequestParam(defaultValue = "0") int pageNumber,
             @RequestParam(defaultValue = "10") int pageSize,
-            @RequestParam String state) {
+            @PathVariable String state) {
 
         PageResponse<DriverDTO> driverPageResponse = driverService.getDriverByState(state, pageNumber, pageSize);
 
@@ -78,11 +78,11 @@ public class DriverController {
         return ResponseEntity.ok(driverPageResponse);
     }
 
-    @GetMapping("/name")
+    @GetMapping("/name/{name}")
     public ResponseEntity<PageResponse<DriverDTO>> getDriverByName(
             @RequestParam(defaultValue = "0") int pageNumber,
             @RequestParam(defaultValue = "10") int pageSize,
-            @RequestParam String name) {
+            @PathVariable String name) {
 
         PageResponse<DriverDTO> driverPageResponse = driverService.getDriverByName(name, pageNumber, pageSize);
 
@@ -93,11 +93,11 @@ public class DriverController {
         return ResponseEntity.ok(driverPageResponse);
     }
 
-    @GetMapping("/license")
+    @GetMapping("/license/{license}")
     public ResponseEntity<PageResponse<DriverDTO>> getDriverByLicense(
             @RequestParam(defaultValue = "0") int pageNumber,
             @RequestParam(defaultValue = "10") int pageSize,
-            @RequestParam String license) {
+            @PathVariable String license) {
 
         PageResponse<DriverDTO> driverPageResponse = driverService.getDriverByLicense(license, pageNumber, pageSize);
 

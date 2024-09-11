@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -40,6 +41,29 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(errorObject, HttpStatus.NOT_FOUND);
     }
+
+    // 404
+    @ExceptionHandler(NoResourceFoundException.class)
+    public Object handleResourceNotFound(NoResourceFoundException ex, HttpServletRequest request) {
+        String acceptHeader = request.getHeader(ViewConstants.REQUEST_HEADER);
+
+        if (acceptHeader != null && acceptHeader.contains(ViewConstants.HEADER_CONTAINS_HTML)) {
+            ModelAndView mav = new ModelAndView(ViewConstants.ERROR_404_PAGE);
+            mav.addObject("message", ex.getMessage());
+            return mav;
+        }
+
+        ErrorDTO errorObject = new ErrorDTO(
+                request.getRequestURI(),
+                "Not Found",
+                ex.getMessage(),
+                LocalDateTime.now().format(FORMATTER),
+                HttpStatus.NOT_FOUND.value()
+        );
+
+        return new ResponseEntity<>(errorObject, HttpStatus.NOT_FOUND);
+    }
+
 
     // 400
     @ExceptionHandler(BadRequestException.class)

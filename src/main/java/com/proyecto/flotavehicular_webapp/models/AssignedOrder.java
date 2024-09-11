@@ -19,7 +19,7 @@ public class AssignedOrder {
     private Date assignedDate;
     private String itinerary;
 
-    //Relaciones
+    // Relationships
     @ManyToOne
     @JoinColumn(name = "car_id")
     private Car car;
