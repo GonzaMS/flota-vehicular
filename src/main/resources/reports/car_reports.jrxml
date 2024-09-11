@@ -16,20 +16,20 @@
     <field name="carModel"/>
     <field name="carFabricationYear"/>
     <field name="carState" class="java.lang.Enum"/>
-    <field name="maintenanceHistories" class="java.util.List"/> <!-- Asegúrate de usar "maintenanceHistories" -->
+    <field name="maintenanceHistories" class="java.util.List"/>
 
     <!-- Report Title -->
     <title>
-        <band height="60">
+        <band height="50">
             <textField>
                 <reportElement x="0" y="0" width="555" height="30"/>
                 <textElement>
-                    <font size="20" isBold="true"/>
+                    <font size="18" isBold="true"/>
                 </textElement>
                 <textFieldExpression><![CDATA["Reporte de Vehículos Detallado"]]></textFieldExpression>
             </textField>
             <textField>
-                <reportElement x="0" y="40" width="555" height="20"/>
+                <reportElement x="0" y="30" width="555" height="20"/>
                 <textElement>
                     <font size="12" isBold="false"/>
                 </textElement>
@@ -38,67 +38,109 @@
         </band>
     </title>
 
-    <!-- Report Column Header -->
+    <!-- Column Header -->
     <columnHeader>
-        <band height="20">
+        <band height="25">
             <staticText>
-                <reportElement x="0" y="0" width="100" height="20"/>
+                <reportElement x="0" y="0" width="80" height="25" backcolor="#D3D3D3" mode="Opaque"/>
+                <textElement textAlignment="Center">
+                    <font size="10" isBold="true"/>
+                </textElement>
                 <text><![CDATA[Matrícula]]></text>
             </staticText>
             <staticText>
-                <reportElement x="100" y="0" width="100" height="20"/>
+                <reportElement x="80" y="0" width="80" height="25" backcolor="#D3D3D3" mode="Opaque"/>
+                <textElement textAlignment="Center">
+                    <font size="10" isBold="true"/>
+                </textElement>
                 <text><![CDATA[Marca]]></text>
             </staticText>
             <staticText>
-                <reportElement x="200" y="0" width="100" height="20"/>
+                <reportElement x="160" y="0" width="80" height="25" backcolor="#D3D3D3" mode="Opaque"/>
+                <textElement textAlignment="Center">
+                    <font size="10" isBold="true"/>
+                </textElement>
                 <text><![CDATA[Modelo]]></text>
             </staticText>
             <staticText>
-                <reportElement x="300" y="0" width="100" height="20"/>
+                <reportElement x="240" y="0" width="80" height="25" backcolor="#D3D3D3" mode="Opaque"/>
+                <textElement textAlignment="Center">
+                    <font size="10" isBold="true"/>
+                </textElement>
                 <text><![CDATA[Año]]></text>
             </staticText>
             <staticText>
-                <reportElement x="400" y="0" width="100" height="20"/>
+                <reportElement x="320" y="0" width="80" height="25" backcolor="#D3D3D3" mode="Opaque"/>
+                <textElement textAlignment="Center">
+                    <font size="10" isBold="true"/>
+                </textElement>
                 <text><![CDATA[Estado]]></text>
+            </staticText>
+            <staticText>
+                <reportElement x="400" y="0" width="155" height="25" backcolor="#D3D3D3" mode="Opaque"/>
+                <textElement textAlignment="Center">
+                    <font size="10" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Detalles de Mantenimiento]]></text>
             </staticText>
         </band>
     </columnHeader>
 
-    <!-- Report Detail -->
+    <!-- Detail -->
     <detail>
-        <band height="60">
+        <band height="30">
+            <!-- Información del vehículo -->
             <textField>
-                <reportElement x="0" y="0" width="100" height="20"/>
+                <reportElement x="0" y="0" width="80" height="25" forecolor="#000000" backcolor="#FFFFFF" mode="Opaque"/>
+                <textElement textAlignment="Center">
+                    <font size="9"/>
+                </textElement>
                 <textFieldExpression><![CDATA[$F{carLicensePlate}]]></textFieldExpression>
             </textField>
             <textField>
-                <reportElement x="100" y="0" width="100" height="20"/>
+                <reportElement x="80" y="0" width="80" height="25" forecolor="#000000" backcolor="#FFFFFF" mode="Opaque"/>
+                <textElement textAlignment="Center">
+                    <font size="9"/>
+                </textElement>
                 <textFieldExpression><![CDATA[$F{carBrand}]]></textFieldExpression>
             </textField>
             <textField>
-                <reportElement x="200" y="0" width="100" height="20"/>
+                <reportElement x="160" y="0" width="80" height="25" forecolor="#000000" backcolor="#FFFFFF" mode="Opaque"/>
+                <textElement textAlignment="Center">
+                    <font size="9"/>
+                </textElement>
                 <textFieldExpression><![CDATA[$F{carModel}]]></textFieldExpression>
             </textField>
             <textField>
-                <reportElement x="300" y="0" width="100" height="20"/>
+                <reportElement x="240" y="0" width="80" height="25" forecolor="#000000" backcolor="#FFFFFF" mode="Opaque"/>
+                <textElement textAlignment="Center">
+                    <font size="9"/>
+                </textElement>
                 <textFieldExpression><![CDATA[$F{carFabricationYear}]]></textFieldExpression>
             </textField>
             <textField>
-                <reportElement x="400" y="0" width="100" height="20"/>
+                <reportElement x="320" y="0" width="80" height="25" forecolor="#000000" backcolor="#FFFFFF" mode="Opaque"/>
+                <textElement textAlignment="Center">
+                    <font size="9"/>
+                </textElement>
                 <textFieldExpression><![CDATA[$F{carState}]]></textFieldExpression>
             </textField>
 
-            <!-- Section for Maintenance History -->
-            <subreport>
-                <reportElement x="0" y="40" width="555" height="20"/>
-                <dataSourceExpression>
-                    <![CDATA[new net.sf.jasperreports.engine.data.JRBeanCollectionDataSource($F{maintenanceHistories})]]> <!-- Usa "maintenanceHistories" -->
-                </dataSourceExpression>
-                <subreportExpression>
-                    <![CDATA["src/main/resources/reports/maintenance_history_subreport.jasper"]]>
-                </subreportExpression>
-            </subreport>
-
+<!--            &lt;!&ndash; Maintenance Details &ndash;&gt;-->
+<!--            <textField>-->
+<!--                <reportElement x="400" y="0" width="155" height="25" forecolor="#000000" backcolor="#FFFFFF" mode="Opaque"/>-->
+<!--                <textElement textAlignment="Left">-->
+<!--                    <font size="9"/>-->
+<!--                </textElement>-->
+<!--                <textFieldExpression><![CDATA[-->
+<!--                    $F{maintenanceHistories} != null && ((java.util.List) $F{maintenanceHistories}).size() > 0 ?-->
+<!--                    "Fecha: " + new java.text.SimpleDateFormat("dd/MM/yy, hh:mm a").format(((com.proyecto.flotavehicular.models.MaintenanceHistory) ((java.util.List) $F{maintenanceHistories}).get(0)).getMaintenanceDate()) +-->
+<!--                    " | Desc: " + ((com.proyecto.flotavehicular.models.MaintenanceHistory) ((java.util.List) $F{maintenanceHistories}).get(0)).getMaintenanceDescription() +-->
+<!--                    " | Costo: $" + String.valueOf(((com.proyecto.flotavehicular.models.MaintenanceHistory) ((java.util.List) $F{maintenanceHistories}).get(0)).getMaintenanceCost()) +-->
+<!--                    " | Tipo: " + ((com.proyecto.flotavehicular.models.MaintenanceHistory) ((java.util.List) $F{maintenanceHistories}).get(0)).getMaintenanceType().toString() :-->
+<!--                    "No hay mantenimiento"-->
+<!--                ]]></textFieldExpression>-->
+<!--            </textField>-->
         </band>
     </detail>
 
@@ -107,8 +149,10 @@
         <band height="20">
             <textField>
                 <reportElement x="0" y="0" width="555" height="20"/>
+                <textElement textAlignment="Center"/>
                 <textFieldExpression><![CDATA["Página " + $V{PAGE_NUMBER}]]></textFieldExpression>
             </textField>
         </band>
     </pageFooter>
+
 </jasperReport>

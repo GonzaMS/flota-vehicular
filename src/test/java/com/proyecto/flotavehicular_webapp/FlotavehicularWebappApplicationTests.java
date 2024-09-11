@@ -1,4 +1,4 @@
-package com.proyecto.flotavehicular_webapp;
+package com.proyecto.flotavehicular;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;

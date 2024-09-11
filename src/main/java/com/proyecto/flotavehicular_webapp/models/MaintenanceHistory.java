@@ -1,5 +1,6 @@
 package com.proyecto.flotavehicular_webapp.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.proyecto.flotavehicular_webapp.enums.EMAINTENANCE;
 import jakarta.persistence.*;
 import lombok.*;
@@ -29,6 +30,7 @@ public class MaintenanceHistory {
     // Relationships
     @ManyToOne
     @JoinColumn(name = "car_id")
+    @JsonIgnore
     private Car car;
 
     @PrePersist
@@ -36,10 +38,5 @@ public class MaintenanceHistory {
         if (this.maintenanceDate == null) {
             this.maintenanceDate = new Date();
         }
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.maintenanceDate = new Date();
     }
 }

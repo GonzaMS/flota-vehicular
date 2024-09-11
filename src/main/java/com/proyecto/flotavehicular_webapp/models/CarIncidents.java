@@ -34,9 +34,4 @@ public class CarIncidents {
             this.incidentDate = new Date();
         }
     }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.incidentDate = new Date();
-    }
 }

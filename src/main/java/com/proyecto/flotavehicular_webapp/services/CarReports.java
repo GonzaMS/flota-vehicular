@@ -25,22 +25,29 @@ public class CarReports {
     public void exportReport(HttpServletResponse response) throws JRException, IOException {
         List<Car> vehiculos = carRepository.findAll();
 
-        // Load template .jrxml
-        InputStream templateStream = getClass().getResourceAsStream("/reports/car_reports.jrxml");
-        JasperReport jasperReport = JasperCompileManager.compileReport(templateStream);
+        // Load template .jrxml (consider using .jasper precompiled file if available)
+        try (InputStream templateStream = getClass().getResourceAsStream("/reports/car_reports.jrxml")) {
+            if (templateStream == null) {
+                throw new JRException("The report template file was not found.");
+            }
 
-        // Fill the report with the data
-        JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(vehiculos);
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("createdBy", "Sistema de Gestión de Vehículos");
+            // Compile the .jrxml file
+            JasperReport jasperReport = JasperCompileManager.compileReport(templateStream);
 
-        JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
+            // Prepare the data source
+            JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(vehiculos);
+            Map<String, Object> parameters = new HashMap<>();
+            parameters.put("createdBy", "Sistema de Gestión de Vehículos");
 
-        // Set the content type of the report (PDF)
-        response.setContentType("application/pdf");
-        response.setHeader("Content-Disposition", "attachment; filename=reporte_vehiculos.pdf");
+            // Fill the report with data
+            JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
 
-        // Export the report to PDF and write it to the HTTP response
-        JasperExportManager.exportReportToPdfStream(jasperPrint, response.getOutputStream());
+            // Set the content type for the response
+            response.setContentType("application/pdf");
+            response.setHeader("Content-Disposition", "attachment; filename=reporte_vehiculos.pdf");
+
+            // Export the report as a PDF stream to the HTTP response
+            JasperExportManager.exportReportToPdfStream(jasperPrint, response.getOutputStream());
+        }
     }
 }

@@ -12,11 +12,11 @@ public class KilometersDTO {
 
     private Long kilometersId;
 
-    @NotNull(message = "Actual km is mandatory")
+    @NotNull(message = "Actual km is required")
     private Integer actualKm;
 
     private Date updateKmDate;
 
-    @NotNull(message = "Car id is mandatory")
+    @NotNull(message = "CarId is required")
     private Long carId;
 }

@@ -11,7 +11,7 @@
     <field name="maintenanceDate" class="java.util.Date"/>
     <field name="maintenanceDescription"/>
     <field name="maintenanceCost" class="java.lang.Double"/>
-    <field name="maintenanceType"/>
+    <field name="maintenanceType" class="java.lang.Enum"/>
 
     <!-- Title Band -->
     <title>
