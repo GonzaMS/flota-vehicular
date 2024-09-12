@@ -3,7 +3,7 @@
 ## Descripción
 El **Proyecto de Control de Flota Vehicular** es un sistema diseñado para gestionar, coordinar y supervisar una flota de vehículos utilizados por una empresa. Permite realizar un seguimiento de los vehículos, conductores y órdenes de viaje, así como gestionar mantenimientos, incidencias, y evaluar el desempeño de los conductores.
 
-## Integrantes del Equipo
+## Integrantes
 - **Cristhian Marecos**
 - **Jorge Candia**
 - **Jose Diaz**
@@ -38,7 +38,7 @@ El **Proyecto de Control de Flota Vehicular** es un sistema diseñado para gesti
 
 ## Requisitos Previos
 
-1. **Java 11+**
+1. **Java 17+**
 2. **PostgreSQL**
 3. **Maven**: Para gestionar las dependencias del proyecto.
 
@@ -48,7 +48,7 @@ El **Proyecto de Control de Flota Vehicular** es un sistema diseñado para gesti
 
 ```properties
 spring.datasource.url=jdbc:postgresql://localhost:5432/control_flotas
-spring.datasource.username=tu_usuario
-spring.datasource.password=tu_contraseña
+spring.datasource.username=username
+spring.datasource.password=password
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
