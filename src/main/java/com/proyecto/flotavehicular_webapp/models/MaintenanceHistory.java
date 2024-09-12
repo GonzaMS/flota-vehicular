@@ -39,4 +39,9 @@ public class MaintenanceHistory {
             this.maintenanceDate = new Date();
         }
     }
+
+    @Override
+    public String toString() {
+        return  maintenanceDate +  maintenanceDescription + maintenanceCost + maintenanceType;
+    }
 }

@@ -88,59 +88,72 @@
 
     <!-- Detail -->
     <detail>
-        <band height="30">
+        <band height="55"> <!-- Aquí se ajusta la altura de la banda -->
             <!-- Información del vehículo -->
             <textField>
-                <reportElement x="0" y="0" width="80" height="25" forecolor="#000000" backcolor="#FFFFFF" mode="Opaque"/>
+                <reportElement x="0" y="0" width="80" height="25" forecolor="#000000" backcolor="#FFFFFF"
+                               mode="Opaque"/>
                 <textElement textAlignment="Center">
                     <font size="9"/>
                 </textElement>
                 <textFieldExpression><![CDATA[$F{carLicensePlate}]]></textFieldExpression>
             </textField>
             <textField>
-                <reportElement x="80" y="0" width="80" height="25" forecolor="#000000" backcolor="#FFFFFF" mode="Opaque"/>
+                <reportElement x="80" y="0" width="80" height="25" forecolor="#000000" backcolor="#FFFFFF"
+                               mode="Opaque"/>
                 <textElement textAlignment="Center">
                     <font size="9"/>
                 </textElement>
                 <textFieldExpression><![CDATA[$F{carBrand}]]></textFieldExpression>
             </textField>
             <textField>
-                <reportElement x="160" y="0" width="80" height="25" forecolor="#000000" backcolor="#FFFFFF" mode="Opaque"/>
+                <reportElement x="160" y="0" width="80" height="25" forecolor="#000000" backcolor="#FFFFFF"
+                               mode="Opaque"/>
                 <textElement textAlignment="Center">
                     <font size="9"/>
                 </textElement>
                 <textFieldExpression><![CDATA[$F{carModel}]]></textFieldExpression>
             </textField>
             <textField>
-                <reportElement x="240" y="0" width="80" height="25" forecolor="#000000" backcolor="#FFFFFF" mode="Opaque"/>
+                <reportElement x="240" y="0" width="80" height="25" forecolor="#000000" backcolor="#FFFFFF"
+                               mode="Opaque"/>
                 <textElement textAlignment="Center">
                     <font size="9"/>
                 </textElement>
                 <textFieldExpression><![CDATA[$F{carFabricationYear}]]></textFieldExpression>
             </textField>
             <textField>
-                <reportElement x="320" y="0" width="80" height="25" forecolor="#000000" backcolor="#FFFFFF" mode="Opaque"/>
+                <reportElement x="320" y="0" width="80" height="25" forecolor="#000000" backcolor="#FFFFFF"
+                               mode="Opaque"/>
                 <textElement textAlignment="Center">
                     <font size="9"/>
                 </textElement>
                 <textFieldExpression><![CDATA[$F{carState}]]></textFieldExpression>
             </textField>
 
-<!--            &lt;!&ndash; Maintenance Details &ndash;&gt;-->
-<!--            <textField>-->
-<!--                <reportElement x="400" y="0" width="155" height="25" forecolor="#000000" backcolor="#FFFFFF" mode="Opaque"/>-->
-<!--                <textElement textAlignment="Left">-->
-<!--                    <font size="9"/>-->
-<!--                </textElement>-->
-<!--                <textFieldExpression><![CDATA[-->
-<!--                    $F{maintenanceHistories} != null && ((java.util.List) $F{maintenanceHistories}).size() > 0 ?-->
-<!--                    "Fecha: " + new java.text.SimpleDateFormat("dd/MM/yy, hh:mm a").format(((com.proyecto.flotavehicular.models.MaintenanceHistory) ((java.util.List) $F{maintenanceHistories}).get(0)).getMaintenanceDate()) +-->
-<!--                    " | Desc: " + ((com.proyecto.flotavehicular.models.MaintenanceHistory) ((java.util.List) $F{maintenanceHistories}).get(0)).getMaintenanceDescription() +-->
-<!--                    " | Costo: $" + String.valueOf(((com.proyecto.flotavehicular.models.MaintenanceHistory) ((java.util.List) $F{maintenanceHistories}).get(0)).getMaintenanceCost()) +-->
-<!--                    " | Tipo: " + ((com.proyecto.flotavehicular.models.MaintenanceHistory) ((java.util.List) $F{maintenanceHistories}).get(0)).getMaintenanceType().toString() :-->
-<!--                    "No hay mantenimiento"-->
-<!--                ]]></textFieldExpression>-->
-<!--            </textField>-->
+            <!-- Mostrar el contenido completo de maintenanceHistories para depuración -->
+            <textField>
+                <reportElement x="0" y="30" width="555" height="25" forecolor="#000000" backcolor="#FFFFFF"
+                               mode="Opaque"/>
+                <textElement textAlignment="Left">
+                    <font size="9"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{maintenanceHistories}.toString()]]></textFieldExpression>
+            </textField>
+
+            <!-- Mostrar el Tipo de Mantenimiento -->
+            <textField>
+                <reportElement x="400" y="0" width="155" height="25" forecolor="#000000" backcolor="#FFFFFF"
+                               mode="Opaque"/>
+                <textElement textAlignment="Left">
+                    <font size="9"/>
+                </textElement>
+                <textFieldExpression><![CDATA[
+                    ((java.util.List) $F{maintenanceHistories}) != null && !((java.util.List) $F{maintenanceHistories}).isEmpty() ?
+                    ((com.proyecto.flotavehicular_webapp.models.MaintenanceHistory) ((java.util.List) $F{maintenanceHistories}).get(0)).getMaintenanceType().toString() :
+                    "No especificado"
+                ]]></textFieldExpression>
+            </textField>
         </band>
     </detail>
 

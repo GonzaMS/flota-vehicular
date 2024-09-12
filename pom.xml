@@ -100,7 +100,6 @@
             <groupId>com.proyecto</groupId>
             <artifactId>flotavehicular</artifactId>
             <version>1.0</version>
-            <scope>system</scope>
             <systemPath>${project.basedir}/lib/flotavehicular.jar</systemPath>
         </dependency>
 
