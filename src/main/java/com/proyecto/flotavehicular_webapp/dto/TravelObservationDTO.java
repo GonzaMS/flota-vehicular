@@ -1,6 +1,7 @@
 package com.proyecto.flotavehicular_webapp.dto;
 
 import com.proyecto.flotavehicular_webapp.models.Driver;
+import com.proyecto.flotavehicular_webapp.models.TravelOrder;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
@@ -18,7 +19,7 @@ public class TravelObservationDTO {
 
     private @NotNull(
             message = "Travel Order is required"
-    ) Long travelOrderId;
+    ) TravelOrder travelOrderId;
 
     private @NotNull(
             message = "Driver is required"

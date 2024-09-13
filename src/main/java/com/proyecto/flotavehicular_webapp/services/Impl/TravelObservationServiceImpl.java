@@ -4,7 +4,6 @@ import com.proyecto.flotavehicular_webapp.dto.TravelObservationDTO;
 import com.proyecto.flotavehicular_webapp.models.TravelObservation;
 import com.proyecto.flotavehicular_webapp.models.TravelOrder;
 import com.proyecto.flotavehicular_webapp.repositories.ITravelObservationRepository;
-import com.proyecto.flotavehicular_webapp.repositories.ITravelOrderRepository;
 import com.proyecto.flotavehicular_webapp.services.ITravelObservationService;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +20,6 @@ public class TravelObservationServiceImpl implements ITravelObservationService {
 
     @Autowired
     private ITravelObservationRepository travelObservationRepository;
-
-    @Autowired
-    private ITravelOrderRepository travelOrderRepository; // Necesario para obtener la orden de viaje asociada
 
     @Override
     @Transactional(readOnly = true)
@@ -47,9 +43,8 @@ public class TravelObservationServiceImpl implements ITravelObservationService {
     @Override
     @Transactional
     public TravelObservationDTO createTravelObservation(TravelObservationDTO travelObservationDTO) {
-        // Validar si la orden de viaje existe
-        TravelOrder travelOrder = travelOrderRepository.findById(travelObservationDTO.getTravelOrderId())
-                .orElseThrow(() -> new RuntimeException("Travel order not found"));
+        // Aquí ya tenemos el objeto TravelOrder completo en el DTO
+        TravelOrder travelOrder = travelObservationDTO.getTravelOrderId();
 
         TravelObservation travelObservation = mapToEntity(travelObservationDTO, travelOrder);
         TravelObservation savedObservation = travelObservationRepository.save(travelObservation);
@@ -65,10 +60,8 @@ public class TravelObservationServiceImpl implements ITravelObservationService {
         travelObservation.setObservationDesc(travelObservationDTO.getObservationDesc());
         travelObservation.setDriver(travelObservationDTO.getDriver());
 
-        // Validar y actualizar la orden de viaje
-        TravelOrder travelOrder = travelOrderRepository.findById(travelObservationDTO.getTravelOrderId())
-                .orElseThrow(() -> new RuntimeException("Travel order not found"));
-        travelObservation.setTravelOrderID(travelOrder);
+        // Actualizar el objeto TravelOrder completo
+        travelObservation.setTravelOrderID(travelObservationDTO.getTravelOrderId());
 
         travelObservationRepository.save(travelObservation);
     }
@@ -79,33 +72,22 @@ public class TravelObservationServiceImpl implements ITravelObservationService {
         travelObservationRepository.deleteById(id);
     }
 
-    // NUEVO: Buscar observaciones por driver_id
-//    @Transactional(readOnly = true)
-//    public PageResponse<TravelObservationDTO> getObservationsByDriver(Long driverId, int pageNumber, int pageSize) {
-//        Pageable pageable = PageRequest.of(pageNumber, pageSize);
-//        Page<TravelObservation> observationsPage = travelObservationRepository.findByDriver_Id(driverId, pageable);
-//
-//        List<TravelObservationDTO> dtos = observationsPage.stream().map(this::mapToDTO).toList();
-//        return PageResponse.of(dtos, observationsPage.getNumber(), observationsPage.getSize(),
-//                observationsPage.getTotalElements(), observationsPage.getTotalPages(), observationsPage.isLast());
-//    }
-
     // Mapear desde el modelo a DTO
     private TravelObservationDTO mapToDTO(TravelObservation travelObservation) {
         return TravelObservationDTO.builder()
                 .observationId(travelObservation.getObservationId())
                 .observationDesc(travelObservation.getObservationDesc())
-                .travelOrderId(travelObservation.getTravelOrderID().getTravelOrderId())
+                .travelOrderId(travelObservation.getTravelOrderID())  // Pasamos el objeto completo
                 .driver(travelObservation.getDriver())
                 .build();
     }
 
-    // Mapear desde DTO al modelo (incluyendo la orden de viaje)
+    // Mapear desde DTO al modelo
     private TravelObservation mapToEntity(TravelObservationDTO travelObservationDTO, TravelOrder travelOrder) {
         return TravelObservation.builder()
                 .observationId(travelObservationDTO.getObservationId())
                 .observationDesc(travelObservationDTO.getObservationDesc())
-                .travelOrderID(travelOrder)
+                .travelOrderID(travelOrder)  // Usamos el objeto TravelOrder completo
                 .driver(travelObservationDTO.getDriver())
                 .build();
     }
