@@ -42,6 +42,10 @@ public class MaintenanceHistory {
 
     @Override
     public String toString() {
-        return  maintenanceDate +  maintenanceDescription + maintenanceCost + maintenanceType;
+        return "Fecha: " + maintenanceDate +
+                "Desc: " + maintenanceDescription +
+                "Costo: " + maintenanceCost +
+                "Tipo: " + maintenanceType +
+                "\n";
     }
 }

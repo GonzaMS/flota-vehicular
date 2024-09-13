@@ -140,20 +140,6 @@
                 </textElement>
                 <textFieldExpression><![CDATA[$F{maintenanceHistories}.toString()]]></textFieldExpression>
             </textField>
-
-            <!-- Mostrar el Tipo de Mantenimiento -->
-            <textField>
-                <reportElement x="400" y="0" width="155" height="25" forecolor="#000000" backcolor="#FFFFFF"
-                               mode="Opaque"/>
-                <textElement textAlignment="Left">
-                    <font size="9"/>
-                </textElement>
-                <textFieldExpression><![CDATA[
-                    ((java.util.List) $F{maintenanceHistories}) != null && !((java.util.List) $F{maintenanceHistories}).isEmpty() ?
-                    ((com.proyecto.flotavehicular_webapp.models.MaintenanceHistory) ((java.util.List) $F{maintenanceHistories}).get(0)).getMaintenanceType().toString() :
-                    "No especificado"
-                ]]></textFieldExpression>
-            </textField>
         </band>
     </detail>
 
