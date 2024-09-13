@@ -10,8 +10,6 @@ import java.util.List;
 
 @Repository
 public interface ITravelObservationRepository extends JpaRepository<TravelObservation, Long> {
-    // Puedes agregar métodos personalizados de consulta aquí si es necesario.
-    // Por ejemplo:
     Page<TravelObservation> findByTravelOrderID_TravelOrderId(Long travelOrderId, Pageable pageable);
     //Page<TravelObservation> findByDriver_Id(Long driverId, Pageable pageable);
 }

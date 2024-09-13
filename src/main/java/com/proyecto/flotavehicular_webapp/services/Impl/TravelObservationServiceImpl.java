@@ -43,7 +43,7 @@ public class TravelObservationServiceImpl implements ITravelObservationService {
     @Override
     @Transactional
     public TravelObservationDTO createTravelObservation(TravelObservationDTO travelObservationDTO) {
-        // Aquí ya tenemos el objeto TravelOrder completo en el DTO
+
         TravelOrder travelOrder = travelObservationDTO.getTravelOrderId();
 
         TravelObservation travelObservation = mapToEntity(travelObservationDTO, travelOrder);

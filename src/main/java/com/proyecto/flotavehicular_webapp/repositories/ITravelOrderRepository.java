@@ -10,14 +10,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ITravelOrderRepository extends JpaRepository<TravelOrder, Long> {
 
-    // Si deseas agregar métodos personalizados de consulta, puedes hacerlo aquí.
-    // Por ejemplo:
-    // List<TravelOrder> findByClient(String client);
-
-    // Filtrar por estado de la orden de viaje
     Page<TravelOrder> findByTravelOrderState(EORDERSSTATE state, Pageable pageable);
-
-    // Filtrar por cliente
     Page<TravelOrder> findByClient(String client, Pageable pageable);
 
 }
