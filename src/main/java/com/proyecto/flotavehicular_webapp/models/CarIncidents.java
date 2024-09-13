@@ -27,9 +27,15 @@ public class CarIncidents {
     @JoinColumn(name = "car_id")
     private Car car;
 
-
     @PrePersist
     protected void onCreate() {
+        if (this.incidentDate == null) {
+            this.incidentDate = new Date();
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
         if (this.incidentDate == null) {
             this.incidentDate = new Date();
         }

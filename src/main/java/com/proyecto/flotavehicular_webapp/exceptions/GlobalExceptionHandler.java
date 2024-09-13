@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
@@ -134,6 +135,28 @@ public class GlobalExceptionHandler {
     // 500
     @ExceptionHandler(InternalError.class)
     public Object handleInternalErrorException(InternalError ex, HttpServletRequest request) {
+        String acceptHeader = request.getHeader(ViewConstants.REQUEST_HEADER);
+
+        if (acceptHeader != null && acceptHeader.contains(ViewConstants.HEADER_CONTAINS_HTML)) {
+            ModelAndView mav = new ModelAndView(ViewConstants.ERROR_500_PAGE);
+            mav.addObject("message", ex.getMessage());
+            return mav;
+        }
+
+        ErrorDTO errorObject = new ErrorDTO(
+                request.getRequestURI(),
+                "Internal Server Error",
+                ex.getMessage(),
+                LocalDateTime.now().format(FORMATTER),
+                HttpStatus.INTERNAL_SERVER_ERROR.value()
+        );
+
+        return new ResponseEntity<>(errorObject, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    // 500
+    @ExceptionHandler(HttpClientErrorException.class)
+    public Object handleHttpClientErrorException(HttpClientErrorException ex, HttpServletRequest request) {
         String acceptHeader = request.getHeader(ViewConstants.REQUEST_HEADER);
 
         if (acceptHeader != null && acceptHeader.contains(ViewConstants.HEADER_CONTAINS_HTML)) {

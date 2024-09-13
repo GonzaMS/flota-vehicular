@@ -5,15 +5,15 @@ import com.proyecto.flotavehicular_webapp.models.CarIncidents;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
 
 public interface ICarIncidentsService {
-    PageResponse<CarIncidentsDTO> getAllIncidents(int pageNumber, int pageSize);
+    PageResponse<CarIncidentsDTO> getAll(int pageNumber, int pageSize);
 
-    CarIncidentsDTO getIncidentById(Long id);
+    CarIncidentsDTO getById(Long id);
 
-    CarIncidents saveIncident(CarIncidentsDTO carIncidentsDTO);
+    CarIncidents save(CarIncidentsDTO carIncidentsDTO);
 
-    void updateIncident(Long id, CarIncidentsDTO carIncidentsDTO);
+    void update(Long id, CarIncidentsDTO carIncidentsDTO);
 
-    void deleteIncident(Long id);
+    void delete(Long id);
 
-    PageResponse<CarIncidentsDTO> getIncidentsByCarId(Long id, int pageNumber, int pageSize);
+    PageResponse<CarIncidentsDTO> getByCarId(Long id, int pageNumber, int pageSize);
 }

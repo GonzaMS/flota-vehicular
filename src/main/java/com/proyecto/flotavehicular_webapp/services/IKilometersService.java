@@ -5,15 +5,15 @@ import com.proyecto.flotavehicular_webapp.models.Kilometers;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
 
 public interface IKilometersService {
-    PageResponse<KilometersDTO> getAllKilometers(int pageNumber, int pageSize);
+    PageResponse<KilometersDTO> getAll(int pageNumber, int pageSize);
 
-    KilometersDTO getKilometersById(Long id);
+    KilometersDTO getById(Long id);
 
-    Kilometers saveKilometers(KilometersDTO kilometersDTO);
+    Kilometers save(KilometersDTO kilometersDTO);
 
-    void updateKilometers(Long id, KilometersDTO kilometersDTO);
+    void update(Long id, KilometersDTO kilometersDTO);
 
-    void deleteKilometers(Long id);
+    void delete(Long id);
 
-    PageResponse<KilometersDTO> getKilometersByCarId(Long carId, int pageNumber, int pageSize);
+    PageResponse<KilometersDTO> getByCarId(Long carId, int pageNumber, int pageSize);
 }

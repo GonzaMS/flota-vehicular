@@ -40,6 +40,13 @@ public class MaintenanceHistory {
         }
     }
 
+    @PreUpdate
+    protected void onUpdate() {
+        if (this.maintenanceDate == null) {
+            this.maintenanceDate = new Date();
+        }
+    }
+
     @Override
     public String toString() {
         return "Fecha: " + maintenanceDate +

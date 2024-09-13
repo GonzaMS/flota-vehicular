@@ -7,9 +7,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-
 @Repository
 public interface ICarRepository extends JpaRepository<Car, Long> {
+
     Page<Car> findByCarState(ESTATES carState, Pageable pageable);
 
     Page<Car> findByCarBrand(String carBrand, Pageable pageable);
@@ -18,4 +18,3 @@ public interface ICarRepository extends JpaRepository<Car, Long> {
 
     Page<Car> findByCarLicensePlate(String carLicensePlate, Pageable pageable);
 }
-

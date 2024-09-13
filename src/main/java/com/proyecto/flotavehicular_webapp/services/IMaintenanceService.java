@@ -7,15 +7,15 @@ import com.proyecto.flotavehicular_webapp.utils.PageResponse;
 
 
 public interface IMaintenanceService {
-    PageResponse<MaintenanceDTO> getAllMaintenances(int pageNumber, int pageSize);
+    PageResponse<MaintenanceDTO> getAll(int pageNumber, int pageSize);
 
-    MaintenanceDTO getMaintenanceById(Long id);
+    MaintenanceDTO getById(Long id);
 
-    MaintenanceHistory saveMaintenance(MaintenanceDTO maintenanceDTO);
+    MaintenanceHistory save(MaintenanceDTO maintenanceDTO);
 
-    void updateMaintenance(Long id, MaintenanceDTO maintenanceDTO);
+    void update(Long id, MaintenanceDTO maintenanceDTO);
 
-    void deleteMaintenance(Long id);
+    void delete(Long id);
 
-    PageResponse<MaintenanceDTO> getMaintenanceByCarId(Long id, int pageNumber, int pageSize);
+    PageResponse<MaintenanceDTO> getByCarId(Long id, int pageNumber, int pageSize);
 }

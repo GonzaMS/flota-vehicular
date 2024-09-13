@@ -10,12 +10,13 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
 @Data
 @Builder
-public class MaintenanceDTO {
+public class MaintenanceDTO implements Serializable {
 
     private Long maintenanceId;
 

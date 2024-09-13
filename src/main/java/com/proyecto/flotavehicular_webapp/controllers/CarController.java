@@ -4,15 +4,18 @@ import com.proyecto.flotavehicular_webapp.dto.CarDTO;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
 import com.proyecto.flotavehicular_webapp.models.Car;
 import com.proyecto.flotavehicular_webapp.services.ICarService;
+import org.springframework.beans.factory.annotation.Value;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-
 @RestController
 @RequestMapping("/api/v1/cars")
 public class CarController {
+
+    @Value("${page.size}")
+    private int defaultPageSize;
 
     private final ICarService carService;
 
@@ -23,9 +26,11 @@ public class CarController {
     @GetMapping
     public ResponseEntity<PageResponse<CarDTO>> getAllCars(
             @RequestParam(defaultValue = "0") int pageNumber,
-            @RequestParam(defaultValue = "10") int pageSize) {
+            @RequestParam(required = false) Integer pageSize) {
 
-        PageResponse<CarDTO> carPageResponse = carService.getAllCars(pageNumber, pageSize);
+        int effectivePageSize = (pageSize != null) ? pageSize : defaultPageSize;
+
+        PageResponse<CarDTO> carPageResponse = carService.getAll(pageNumber, effectivePageSize);
 
         if (carPageResponse.items().isEmpty()) {
             return ResponseEntity.noContent().build();
@@ -36,18 +41,18 @@ public class CarController {
 
     @GetMapping("/{id}")
     public ResponseEntity<CarDTO> getCarById(@PathVariable Long id) {
-        CarDTO car = carService.getCarById(id);
+        CarDTO car = carService.getById(id);
+
+        if (car == null) {
+            return ResponseEntity.notFound().build();
+        }
+
         return ResponseEntity.ok(car);
     }
 
     @PostMapping()
     public ResponseEntity<Car> saveCar(@Valid @RequestBody CarDTO carDTO) {
-        Car newCar = carService.saveCar(carDTO);
-
-        if (newCar == null) {
-            return ResponseEntity.badRequest().build();
-        }
-
+        Car newCar = carService.save(carDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(newCar);
     }
 
@@ -56,35 +61,36 @@ public class CarController {
             @PathVariable Long id,
             @Valid @RequestBody CarDTO carDTO) {
 
-        carService.updateCar(id, carDTO);
+        carService.update(id, carDTO);
 
-        CarDTO updateCar = carService.getCarById(id);
+        CarDTO updateCar = carService.getById(id);
 
         return ResponseEntity.ok().body(updateCar);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Car> deleteCar(@PathVariable Long id) {
-        carService.deleteCar(id);
+        carService.delete(id);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/deactivate/{id}")
     public ResponseEntity<CarDTO> deactivateCar(@PathVariable Long id) {
-        carService.deactivateCar(id);
-        CarDTO updatedCar = carService.getCarById(id);
+        carService.deactivate(id);
+        CarDTO updatedCar = carService.getById(id);
         return ResponseEntity.ok(updatedCar);
     }
-
 
     // Filters
     @GetMapping("/state/{state}")
     public ResponseEntity<PageResponse<CarDTO>> getCarByState(
             @RequestParam(defaultValue = "0") int pageNumber,
-            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(required = false) Integer pageSize,
             @PathVariable String state) {
 
-        PageResponse<CarDTO> carPageResponse = carService.getCarByState(state, pageSize, pageNumber);
+        int effectivePageSize = (pageSize != null) ? pageSize : defaultPageSize;
+
+        PageResponse<CarDTO> carPageResponse = carService.getByState(state, pageNumber, effectivePageSize);
 
         if (carPageResponse.items().isEmpty()) {
             return ResponseEntity.noContent().build();
@@ -96,10 +102,12 @@ public class CarController {
     @GetMapping("/brand/{brand}")
     public ResponseEntity<PageResponse<CarDTO>> getCarByBrand(
             @RequestParam(defaultValue = "0") int pageNumber,
-            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(required = false) Integer pageSize,
             @PathVariable String brand) {
 
-        PageResponse<CarDTO> carPageResponse = carService.getCarByBrand(brand, pageSize, pageNumber);
+        int effectivePageSize = (pageSize != null) ? pageSize : defaultPageSize;
+
+        PageResponse<CarDTO> carPageResponse = carService.getByBrand(brand, pageNumber, effectivePageSize);
 
         if (carPageResponse.items().isEmpty()) {
             return ResponseEntity.noContent().build();
@@ -111,10 +119,12 @@ public class CarController {
     @GetMapping("/model/{model}")
     public ResponseEntity<PageResponse<CarDTO>> getCarByModel(
             @RequestParam(defaultValue = "0") int pageNumber,
-            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(required = false) Integer pageSize,
             @PathVariable String model) {
 
-        PageResponse<CarDTO> carPageResponse = carService.getCarByModel(model, pageNumber, pageSize);
+        int effectivePageSize = (pageSize != null) ? pageSize : defaultPageSize;
+
+        PageResponse<CarDTO> carPageResponse = carService.getByModel(model, pageNumber, effectivePageSize);
 
         if (carPageResponse.items().isEmpty()) {
             return ResponseEntity.noContent().build();
@@ -126,10 +136,12 @@ public class CarController {
     @GetMapping("/licensePlate/{licensePlate}")
     public ResponseEntity<PageResponse<CarDTO>> getCarByLicensePlate(
             @RequestParam(defaultValue = "0") int pageNumber,
-            @RequestParam(defaultValue = "10") int pageSize,
+            @RequestParam(required = false) Integer pageSize,
             @PathVariable String licensePlate) {
 
-        PageResponse<CarDTO> carPageResponse = carService.getCarByLicensePlate(licensePlate, pageNumber, pageSize);
+        int effectivePageSize = (pageSize != null) ? pageSize : defaultPageSize;
+
+        PageResponse<CarDTO> carPageResponse = carService.getByLicensePlate(licensePlate, pageNumber, effectivePageSize);
 
         if (carPageResponse.items().isEmpty()) {
             return ResponseEntity.noContent().build();

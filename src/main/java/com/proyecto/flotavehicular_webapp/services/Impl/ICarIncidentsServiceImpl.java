@@ -8,6 +8,7 @@ import com.proyecto.flotavehicular_webapp.repositories.ICarIncidentsRepository;
 import com.proyecto.flotavehicular_webapp.repositories.ICarRepository;
 import com.proyecto.flotavehicular_webapp.services.ICarIncidentsService;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
+import org.hibernate.service.spi.ServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -36,41 +37,30 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<CarIncidentsDTO> getAllIncidents(int pageNumber, int pageSize) {
+    public PageResponse<CarIncidentsDTO> getAll(int pageNumber, int pageSize) {
         try {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
 
             Page<CarIncidents> incidentPage = carIncidentsRepository.findAll(pageable);
 
-            List<CarIncidentsDTO> carIncidentsDTOList = incidentPage.stream()
-                    .map(this::mapToDTO)
-                    .toList();
-
-            return PageResponse.of(
-                    carIncidentsDTOList,
-                    incidentPage.getNumber(),
-                    incidentPage.getSize(),
-                    incidentPage.getTotalElements(),
-                    incidentPage.getTotalPages(),
-                    incidentPage.isLast());
+            return mapToPageResponse(incidentPage);
 
         } catch (Exception e) {
             logger.error("Error getting all incidents: {}", e.getMessage());
-            throw new NotFoundException("Error getting all incidents");
+            throw new ServiceException("Error getting all incidents");
         }
-
     }
 
     @Override
     @Transactional(readOnly = true)
-    public CarIncidentsDTO getIncidentById(Long id) {
+    public CarIncidentsDTO getById(Long id) {
         CarIncidents carIncidents = carIncidentsRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
         return mapToDTO(carIncidents);
     }
 
     @Override
     @Transactional
-    public CarIncidents saveIncident(CarIncidentsDTO carIncidentsDTO) {
+    public CarIncidents save(CarIncidentsDTO carIncidentsDTO) {
         try {
             Car car = carRepository.findById(carIncidentsDTO.getCarId()).orElseThrow(() -> new NotFoundException("Car not found"));
 
@@ -78,15 +68,18 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
             carIncidents.setCar(car);
 
             return carIncidentsRepository.save(carIncidents);
+        } catch (NotFoundException e) {
+            logger.warn("Car with id {} not found", carIncidentsDTO.getCarId());
+            throw e;
         } catch (Exception e) {
             logger.error("Error saving incident: {}", e.getMessage());
-            throw new NotFoundException("Error saving incident");
+            throw new ServiceException("Error saving incident");
         }
     }
 
     @Override
     @Transactional
-    public void updateIncident(Long id, CarIncidentsDTO carIncidentsDTO) {
+    public void update(Long id, CarIncidentsDTO carIncidentsDTO) {
         try {
             CarIncidents carIncidents = carIncidentsRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
 
@@ -95,23 +88,34 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
             carIncidents.setIncidentType(carIncidentsDTO.getIncidentType());
 
             carIncidentsRepository.save(carIncidents);
+        } catch (NotFoundException e) {
+            logger.warn("Incident with id {} not found", id);
+            throw e;
         } catch (Exception e) {
             logger.error("Error updating incident: {}", e.getMessage());
-            throw new NotFoundException("Error updating incident");
+            throw new ServiceException("Error updating incident");
         }
-
     }
 
     @Override
     @Transactional
-    public void deleteIncident(Long id) {
-        CarIncidents carIncidents = carIncidentsRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
-        carIncidentsRepository.delete(carIncidents);
+    public void delete(Long id) {
+        try {
+            CarIncidents carIncidents = carIncidentsRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
+            carIncidentsRepository.delete(carIncidents);
+
+        } catch (NotFoundException e) {
+            logger.warn("Incident with id {} not found", id);
+            throw e;
+        } catch (Exception e) {
+            logger.error("Error deleting incident: {}", e.getMessage());
+            throw new ServiceException("Error deleting incident");
+        }
     }
 
     // Filters
     @Override
-    public PageResponse<CarIncidentsDTO> getIncidentsByCarId(Long id, int pageNumber, int pageSize) {
+    public PageResponse<CarIncidentsDTO> getByCarId(Long id, int pageNumber, int pageSize) {
         try {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
 
@@ -121,23 +125,14 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
                 throw new NotFoundException(NOTFOUND + " for car with id: " + id);
             }
 
-            List<CarIncidentsDTO> carIncidentsDTOList = carIncidentsPage.stream()
-                    .map(this::mapToDTO)
-                    .toList();
-
-            return PageResponse.of(
-                    carIncidentsDTOList,
-                    carIncidentsPage.getNumber(),
-                    carIncidentsPage.getSize(),
-                    carIncidentsPage.getTotalElements(),
-                    carIncidentsPage.getTotalPages(),
-                    carIncidentsPage.isLast()
-            );
+            return mapToPageResponse(carIncidentsPage);
+        } catch (NotFoundException e) {
+            logger.warn("Incidents not found for car with id: {}", id);
+            throw e;
         } catch (Exception e) {
             logger.error("Error getting incidents by car id: {}", e.getMessage());
-            throw new NotFoundException("Error getting incidents by car id");
+            throw new ServiceException("Error getting incidents by car id");
         }
-
     }
 
     // Mappers
@@ -159,5 +154,19 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
                 .incidentDescription(carIncidentsDTO.getIncidentDescription())
                 .incidentType(carIncidentsDTO.getIncidentType())
                 .build();
+    }
+
+    private PageResponse<CarIncidentsDTO> mapToPageResponse(Page<CarIncidents> carIncidentsPage) {
+        List<CarIncidentsDTO> carIncidentsDTOList = carIncidentsPage.stream()
+                .map(this::mapToDTO)
+                .toList();
+
+        return PageResponse.of(
+                carIncidentsDTOList,
+                carIncidentsPage.getNumber(),
+                carIncidentsPage.getSize(),
+                carIncidentsPage.getTotalElements(),
+                carIncidentsPage.getTotalPages(),
+                carIncidentsPage.isLast());
     }
 }

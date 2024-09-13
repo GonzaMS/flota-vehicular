@@ -7,24 +7,24 @@ import com.proyecto.flotavehicular_webapp.models.Car;
 
 public interface ICarService {
 
-    PageResponse<CarDTO> getAllCars(int pageNumber, int pageSize);
+    PageResponse<CarDTO> getAll(int pageNumber, int pageSize);
 
-    CarDTO getCarById(Long id);
+    CarDTO getById(Long id);
 
-    Car saveCar(CarDTO carDTO);
+    Car save(CarDTO carDTO);
 
-    void updateCar(Long id, CarDTO carDTO);
+    void update(Long id, CarDTO carDTO);
 
-    void deleteCar(Long id);
+    void delete(Long id);
 
-    void deactivateCar(Long id);
+    void deactivate(Long id);
 
     // Filters
-    PageResponse<CarDTO> getCarByState(String state, int pageNumber, int pageSize);
+    PageResponse<CarDTO> getByState(String state, int pageNumber, int pageSize);
 
-    PageResponse<CarDTO> getCarByBrand(String brand, int pageNumber, int pageSize);
+    PageResponse<CarDTO> getByBrand(String brand, int pageNumber, int pageSize);
 
-    PageResponse<CarDTO> getCarByModel(String model, int pageNumber, int pageSize);
+    PageResponse<CarDTO> getByModel(String model, int pageNumber, int pageSize);
 
-    PageResponse<CarDTO> getCarByLicensePlate(String licensePlate, int pageNumber, int pageSize);
+    PageResponse<CarDTO> getByLicensePlate(String licensePlate, int pageNumber, int pageSize);
 }

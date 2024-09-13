@@ -31,5 +31,12 @@ public class Kilometers {
             this.updateKmDate = new Date();
         }
     }
+
+    @PreUpdate
+    protected void onUpdate() {
+        if (this.updateKmDate == null) {
+            this.updateKmDate = new Date();
+        }
+    }
 }
 

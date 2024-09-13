@@ -6,11 +6,12 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.List;
 
 @Data
 @Builder
-public class CarDTO {
+public class CarDTO implements Serializable {
 
     private Long carId;
 
@@ -30,4 +31,8 @@ public class CarDTO {
     private ESTATES carState;
 
     private List<MaintenanceDTO> maintenanceHistories;
+
+    private List<CarIncidentsDTO> carIncidents;
+
+    private List<KilometersDTO> carKilometers;
 }

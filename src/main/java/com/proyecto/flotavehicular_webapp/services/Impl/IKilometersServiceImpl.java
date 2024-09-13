@@ -8,6 +8,7 @@ import com.proyecto.flotavehicular_webapp.repositories.ICarRepository;
 import com.proyecto.flotavehicular_webapp.repositories.IKilometersRepository;
 import com.proyecto.flotavehicular_webapp.services.IKilometersService;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
+import org.hibernate.service.spi.ServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -19,56 +20,44 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
-public class IKilometersImpl implements IKilometersService {
+public class IKilometersServiceImpl implements IKilometersService {
 
     private final IKilometersRepository kilometersRepository;
     private final ICarRepository carRepository;
 
     private static final String KILOMETERS_NOT_FOUND = "Kilometers not found";
 
-    private static final Logger logger = LoggerFactory.getLogger(IKilometersImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(IKilometersServiceImpl.class);
 
-    public IKilometersImpl(IKilometersRepository kilometersRepository, ICarRepository carRepository) {
+    public IKilometersServiceImpl(IKilometersRepository kilometersRepository, ICarRepository carRepository) {
         this.kilometersRepository = kilometersRepository;
         this.carRepository = carRepository;
     }
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<KilometersDTO> getAllKilometers(int pageNumber, int pageSize) {
+    public PageResponse<KilometersDTO> getAll(int pageNumber, int pageSize) {
         try {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
             Page<Kilometers> kilometersPage = kilometersRepository.findAll(pageable);
 
-            List<KilometersDTO> kilometersDTOList = kilometersPage.stream()
-                    .map(this::mapToDTO)
-                    .toList();
-
-            return PageResponse.of(
-                    kilometersDTOList,
-                    kilometersPage.getNumber(),
-                    kilometersPage.getSize(),
-                    kilometersPage.getTotalElements(),
-                    kilometersPage.getTotalPages(),
-                    kilometersPage.isLast());
-
+            return mapToPageResponse(kilometersPage);
         } catch (Exception e) {
             logger.error("Error getting all kilometers: {}", e.getMessage());
-            throw new NotFoundException("Error getting all kilometers");
+            throw new ServiceException("Error getting all kilometers");
         }
-
     }
 
     @Override
     @Transactional(readOnly = true)
-    public KilometersDTO getKilometersById(Long id) {
+    public KilometersDTO getById(Long id) {
         Kilometers kilometers = kilometersRepository.findById(id).orElseThrow(() -> new NotFoundException(KILOMETERS_NOT_FOUND));
         return mapToDTO(kilometers);
     }
 
     @Override
     @Transactional
-    public Kilometers saveKilometers(KilometersDTO kilometersDTO) {
+    public Kilometers save(KilometersDTO kilometersDTO) {
         try {
             Car car = carRepository.findById(kilometersDTO.getCarId()).orElseThrow(() -> new NotFoundException("Car not found"));
 
@@ -76,41 +65,52 @@ public class IKilometersImpl implements IKilometersService {
             kilometers.setCar(car);
 
             return kilometersRepository.save(kilometers);
-
+        } catch (NotFoundException e) {
+            logger.error("Car with id {} not found", kilometersDTO.getCarId());
+            throw e;
         } catch (Exception e) {
             logger.error("Error saving kilometers: {}", e.getMessage());
-            throw new NotFoundException("Error saving kilometers");
+            throw new ServiceException("Error saving kilometers");
         }
-
     }
 
     @Override
     @Transactional
-    public void updateKilometers(Long id, KilometersDTO kilometersDTO) {
+    public void update(Long id, KilometersDTO kilometersDTO) {
         try {
             Kilometers kilometers = kilometersRepository.findById(id).orElseThrow(() -> new NotFoundException(KILOMETERS_NOT_FOUND));
             kilometers.setActualKm(kilometersDTO.getActualKm());
             kilometers.setUpdateKmDate(kilometersDTO.getUpdateKmDate());
             kilometersRepository.save(kilometers);
 
+        } catch (NotFoundException e) {
+            logger.error("Kilometers with id {} not found", id);
+            throw e;
         } catch (Exception e) {
             logger.error("Error updating kilometers: {}", e.getMessage());
-            throw new NotFoundException("Error updating kilometers");
+            throw new ServiceException("Error updating kilometers");
         }
-
     }
 
     @Override
     @Transactional
-    public void deleteKilometers(Long id) {
-        Kilometers kilometers = kilometersRepository.findById(id).orElseThrow(() -> new NotFoundException(KILOMETERS_NOT_FOUND));
-        kilometersRepository.delete(kilometers);
+    public void delete(Long id) {
+        try {
+            Kilometers kilometers = kilometersRepository.findById(id).orElseThrow(() -> new NotFoundException(KILOMETERS_NOT_FOUND));
+            kilometersRepository.delete(kilometers);
+        } catch (NotFoundException e) {
+            logger.error("Kilometers with id {} not found", id);
+            throw e;
+        } catch (Exception e) {
+            logger.error("Error deleting kilometers: {}", e.getMessage());
+            throw new ServiceException("Error deleting kilometers");
+        }
     }
 
     // Filters
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<KilometersDTO> getKilometersByCarId(Long carId, int pageNumber, int pageSize) {
+    public PageResponse<KilometersDTO> getByCarId(Long carId, int pageNumber, int pageSize) {
         try {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
 
@@ -120,21 +120,13 @@ public class IKilometersImpl implements IKilometersService {
                 throw new NotFoundException(KILOMETERS_NOT_FOUND + " for car with id: " + carId);
             }
 
-            List<KilometersDTO> kilometersDTOList = kilometersPage.stream()
-                    .map(this::mapToDTO)
-                    .toList();
-
-            return PageResponse.of(
-                    kilometersDTOList,
-                    kilometersPage.getNumber(),
-                    kilometersPage.getSize(),
-                    kilometersPage.getTotalElements(),
-                    kilometersPage.getTotalPages(),
-                    kilometersPage.isLast());
-
+            return mapToPageResponse(kilometersPage);
+        } catch (NotFoundException e) {
+            logger.error("Kilometers not found for car with id: {}", carId);
+            throw e;
         } catch (Exception e) {
-            logger.error("Error getting all kilometers: {}", e.getMessage());
-            throw new NotFoundException("Error getting all kilometers");
+            logger.error("Error getting kilometers by carId: {}", e.getMessage());
+            throw new ServiceException("Error getting kilometers by carId");
         }
     }
 
@@ -157,4 +149,19 @@ public class IKilometersImpl implements IKilometersService {
                 .actualKm(kilometersDTO.getActualKm())
                 .build();
     }
+
+    private PageResponse<KilometersDTO> mapToPageResponse(Page<Kilometers> kilometersPage) {
+        List<KilometersDTO> kilometersDTOList = kilometersPage.stream()
+                .map(this::mapToDTO)
+                .toList();
+
+        return PageResponse.of(
+                kilometersDTOList,
+                kilometersPage.getNumber(),
+                kilometersPage.getSize(),
+                kilometersPage.getTotalElements(),
+                kilometersPage.getTotalPages(),
+                kilometersPage.isLast());
+    }
 }
+
