@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -24,4 +25,6 @@ public class Driver {
     @Enumerated(EnumType.STRING)
     private ESTATES driverState;
 
+    @OneToMany(mappedBy = "driver")
+    List<PerformanceEvaluation> evaluations;
 }

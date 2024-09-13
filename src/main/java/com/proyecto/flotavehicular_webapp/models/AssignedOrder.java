@@ -28,7 +28,24 @@ public class AssignedOrder {
     @JoinColumn(name = "driver_id")
     private Driver driver;
 
-    @ManyToOne
+    private Long travelOrderId;
+
+    @PrePersist
+    protected void onCreate() {
+        if (this.assignedDate == null) {
+            this.assignedDate = new Date();
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        if (this.assignedDate == null) {
+            this.assignedDate = new Date();
+        }
+    }
+
+    /*@ManyToOne
     @JoinColumn(name = "travel_order_id")
     private TravelOrder travelOrder;
+     */
 }

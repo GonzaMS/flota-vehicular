@@ -10,7 +10,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "incidents")
+@Table(name = "driver_incidents")
 public class DriverIncidents {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -33,10 +33,5 @@ public class DriverIncidents {
         if (this.incidentDate == null) {
             this.incidentDate = new Date();
         }
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.incidentDate = new Date();
     }
 }
