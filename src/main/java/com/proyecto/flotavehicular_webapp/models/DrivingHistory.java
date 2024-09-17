@@ -22,7 +22,7 @@ public class DrivingHistory {
 
     // Relaciones
     @ManyToOne
-    @JoinColumn(name = "dirver_id")
+    @JoinColumn(name = "driver_id")
     private Driver driver;
 
     @ManyToOne

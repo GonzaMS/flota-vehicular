@@ -2,10 +2,16 @@ package com.proyecto.flotavehicular_webapp.services.Impl;
 
 import com.proyecto.flotavehicular_webapp.dto.DrivingHistoryDTO;
 import com.proyecto.flotavehicular_webapp.exceptions.NotFoundException;
+import com.proyecto.flotavehicular_webapp.models.Car;
+import com.proyecto.flotavehicular_webapp.models.Driver;
 import com.proyecto.flotavehicular_webapp.models.DrivingHistory;
+import com.proyecto.flotavehicular_webapp.repositories.IDriverRepository;
 import com.proyecto.flotavehicular_webapp.repositories.IDrivingHistoryRepository;
+import com.proyecto.flotavehicular_webapp.services.ExternalApiService;
 import com.proyecto.flotavehicular_webapp.services.IDrivingHistoryService;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -21,28 +27,42 @@ public class IDrivingHistoryServiceImpl implements IDrivingHistoryService {
 
     private static final String NOTFOUND = "Driving history not found";
 
-    public IDrivingHistoryServiceImpl(IDrivingHistoryRepository drivingHistoryRepository) {
+    private static final Logger logger = LoggerFactory.getLogger(IDrivingHistoryServiceImpl.class);
+    private final IDriverRepository driverRepository;
+    private final ExternalApiService externalApiService;
+
+
+    public IDrivingHistoryServiceImpl(IDrivingHistoryRepository drivingHistoryRepository, IDriverRepository driverRepository, ExternalApiService externalApiService ) {
         this.drivingHistoryRepository = drivingHistoryRepository;
+        this.driverRepository = driverRepository;
+        this.externalApiService = externalApiService;
     }
 
     @Override
     @Transactional(readOnly = true)
     public PageResponse<DrivingHistoryDTO> getAllDrivingHistories(int pageNumber, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
-        Page<DrivingHistory> drivingHistoryPage = drivingHistoryRepository.findAll(pageable);
+        try {
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+            Page<DrivingHistory> drivingHistoryPage = drivingHistoryRepository.findAll(pageable);
 
-        List<DrivingHistoryDTO> drivingHistoryDTOList = drivingHistoryPage.stream()
-                .map(this::mapToDTO)
-                .toList();
+            List<DrivingHistoryDTO> drivingHistoryDTOList = drivingHistoryPage.stream()
+                    .map(this::mapToDTO)
+                    .toList();
 
-        return PageResponse.of(
-                drivingHistoryDTOList,
-                drivingHistoryPage.getNumber(),
-                drivingHistoryPage.getSize(),
-                drivingHistoryPage.getTotalElements(),
-                drivingHistoryPage.getTotalPages(),
-                drivingHistoryPage.isLast());
+            return PageResponse.of(
+                    drivingHistoryDTOList,
+                    drivingHistoryPage.getNumber(),
+                    drivingHistoryPage.getSize(),
+                    drivingHistoryPage.getTotalElements(),
+                    drivingHistoryPage.getTotalPages(),
+                    drivingHistoryPage.isLast()
+            );
+        } catch (Exception e) {
+            logger.error("Error getting all driving histories: {}", e.getMessage());
+            throw new NotFoundException("Error getting all driving histories");
+        }
     }
+
 
     @Override
     @Transactional(readOnly = true)
@@ -54,25 +74,42 @@ public class IDrivingHistoryServiceImpl implements IDrivingHistoryService {
 
     @Override
     @Transactional
-    public void saveDrivingHistory(DrivingHistoryDTO drivingHistoryDTO) {
-        DrivingHistory drivingHistory = mapToEntity(drivingHistoryDTO);
-        drivingHistoryRepository.save(drivingHistory);
+    public DrivingHistory saveDrivingHistory(DrivingHistoryDTO drivingHistoryDTO) {
+        try {
+            Driver driver = driverRepository.findById(drivingHistoryDTO.getCarId()).orElseThrow(() -> new NotFoundException("Driver not found"));
+            Car car = externalApiService.callExternalApi(drivingHistoryDTO.getCarId());
+            if (car == null){
+                throw new NotFoundException("Car not found");
+            }
+            DrivingHistory drivingHistory = mapToEntity(drivingHistoryDTO);
+            drivingHistory.setDriver(driver);
+            drivingHistory.setCar(car);
+
+            return drivingHistoryRepository.save(drivingHistory);
+
+        } catch (Exception e) {
+            logger.error("Error saving driving history: {}", e.getMessage());
+            throw new NotFoundException("Error saving driving history");
+        }
     }
+
 
     @Override
     @Transactional
     public void updateDrivingHistory(Long id, DrivingHistoryDTO drivingHistoryDTO) {
-        DrivingHistory drivingHistory = drivingHistoryRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException(NOTFOUND));
+        try {
+            DrivingHistory drivingHistory = drivingHistoryRepository.findById(id)
+                    .orElseThrow(() -> new NotFoundException(NOTFOUND));
 
-        drivingHistory.setDrivingDate(drivingHistoryDTO.getDrivingDate());
-        drivingHistory.setKmDriven(drivingHistoryDTO.getKmDriven());
+            drivingHistory.setDrivingDate(drivingHistoryDTO.getDrivingDate());
+            drivingHistory.setKmDriven(drivingHistoryDTO.getKmDriven());
 
-        // Asumiendo que Driver y Car están bien gestionados en el DTO
-        // podrías agregar lógica para obtener entidades de Driver y Car aquí
-        // y actualizar las referencias si es necesario
+            drivingHistoryRepository.save(drivingHistory);
 
-        drivingHistoryRepository.save(drivingHistory);
+        } catch (Exception e) {
+            logger.error("Error updating driving history: {}", e.getMessage());
+            throw new NotFoundException("Error saving driving history");
+        }
     }
 
     @Override
@@ -86,24 +123,30 @@ public class IDrivingHistoryServiceImpl implements IDrivingHistoryService {
     @Override
     @Transactional(readOnly = true)
     public PageResponse<DrivingHistoryDTO> getDrivingHistoryByDriverId(Long driverId, int pageNumber, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
-        Page<DrivingHistory> drivingHistoryPage = drivingHistoryRepository.findByDriverDriverId(driverId, pageable);
+        try {
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+            Page<DrivingHistory> drivingHistoryPage = drivingHistoryRepository.findByDriverDriverId(driverId, pageable);
 
-        if (drivingHistoryPage.isEmpty()) {
-            throw new NotFoundException("Driver ID not found: " + driverId);
+            if (drivingHistoryPage.isEmpty()) {
+                throw new NotFoundException("Driver ID not found: " + driverId);
+            }
+
+            List<DrivingHistoryDTO> drivingHistoryDTOList = drivingHistoryPage.stream()
+                    .map(this::mapToDTO)
+                    .toList();
+
+            return PageResponse.of(
+                    drivingHistoryDTOList,
+                    drivingHistoryPage.getNumber(),
+                    drivingHistoryPage.getSize(),
+                    drivingHistoryPage.getTotalElements(),
+                    drivingHistoryPage.getTotalPages(),
+                    drivingHistoryPage.isLast());
+
+        } catch (Exception e) {
+            logger.error("Error getting maintenance by car id: {}", e.getMessage());
+            throw new NotFoundException("Error getting maintenance by car id");
         }
-
-        List<DrivingHistoryDTO> drivingHistoryDTOList = drivingHistoryPage.stream()
-                .map(this::mapToDTO)
-                .toList();
-
-        return PageResponse.of(
-                drivingHistoryDTOList,
-                drivingHistoryPage.getNumber(),
-                drivingHistoryPage.getSize(),
-                drivingHistoryPage.getTotalElements(),
-                drivingHistoryPage.getTotalPages(),
-                drivingHistoryPage.isLast());
     }
 
     @Override
@@ -130,21 +173,21 @@ public class IDrivingHistoryServiceImpl implements IDrivingHistoryService {
     }
 
     // Mappers
+    private DrivingHistoryDTO mapToDTO(DrivingHistory drivingHistory) {
+        return DrivingHistoryDTO.builder()
+                .drivingHistoryId(drivingHistory.getDrivingHistoryId())
+                .drivingDate(drivingHistory.getDrivingDate())
+                .kmDriven(drivingHistory.getKmDriven())
+                .driverId(drivingHistory.getDriver().getDriverId())
+                .carId(drivingHistory.getCar().getCarId())
+                .build();
+    }
+
     private DrivingHistory mapToEntity(DrivingHistoryDTO drivingHistoryDTO) {
         return DrivingHistory.builder()
                 .drivingHistoryId(drivingHistoryDTO.getDrivingHistoryId())
                 .drivingDate(drivingHistoryDTO.getDrivingDate())
                 .kmDriven(drivingHistoryDTO.getKmDriven())
-                .build();
-    }
-
-    private DrivingHistoryDTO mapToDTO(DrivingHistory drivingHistory) {
-        return DrivingHistoryDTO.builder()
-                .drivingHistoryId(drivingHistory.getDrivingHistoryId())
-                .driverId(drivingHistory.getDriver().getDriverId())
-                .carId(drivingHistory.getCar().getCarId())
-                .drivingDate(drivingHistory.getDrivingDate())
-                .kmDriven(drivingHistory.getKmDriven())
                 .build();
     }
 }

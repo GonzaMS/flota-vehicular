@@ -6,11 +6,12 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.Date;
 
 @Data
 @Builder
-public class DriverIncidentsDTO {
+public class DriverIncidentsDTO implements Serializable {
     private Long incidentId;
 
     @NotBlank(message = "Description is required")

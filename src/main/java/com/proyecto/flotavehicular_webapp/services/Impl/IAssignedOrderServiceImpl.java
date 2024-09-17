@@ -54,7 +54,7 @@ public class IAssignedOrderServiceImpl implements IAssignedOrderService{
                 throw new NotFoundException("Car not found");
             }
 
-            // Agrega un log para verificar el valor de travelOrderId
+
             System.out.println("TravelOrderId recibido: " + assignedOrderDTO.getTravelOrderId());
 
             AssignedOrder assignedOrder = mapToEntity(assignedOrderDTO);

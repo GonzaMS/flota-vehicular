@@ -25,6 +25,13 @@ public class Driver {
     @Enumerated(EnumType.STRING)
     private ESTATES driverState;
 
-    @OneToMany(mappedBy = "driver")
-    List<PerformanceEvaluation> evaluations;
+    @OneToMany(mappedBy = "driver", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<PerformanceEvaluation> evaluations;
+
+    @OneToMany(mappedBy = "driver", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<DrivingHistory> drivingHistories;
+
+    @OneToMany(mappedBy = "driver", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<DriverIncidents> driverIncidents;
+
 }

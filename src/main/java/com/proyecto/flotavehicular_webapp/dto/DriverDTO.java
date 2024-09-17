@@ -6,11 +6,13 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Builder
-public class DriverDTO {
+public class DriverDTO implements Serializable {
 
     private Long driverId;
 
@@ -25,4 +27,10 @@ public class DriverDTO {
 
     @NotNull(message = "Driver license expiration date is mandatory")
     private Date driverLicenseExpirationDate;
+
+    private List<PerformanceEvaluationDTO> evaluations;
+
+    private List<DrivingHistoryDTO> drivingHistories;
+
+    private List<DriverIncidentsDTO> driverIncidents;
 }
