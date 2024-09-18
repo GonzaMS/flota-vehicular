@@ -11,6 +11,9 @@ import com.proyecto.flotavehicular_webapp.utils.PageResponse;
 import org.hibernate.service.spi.ServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -53,6 +56,7 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "carIncidents", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('carIncidents', #id)")
     public CarIncidentsDTO getById(Long id) {
         CarIncidents carIncidents = carIncidentsRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
         return mapToDTO(carIncidents);
@@ -60,6 +64,7 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
 
     @Override
     @Transactional
+    @CachePut(value = "carIncidents", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('carIncidents', #carIncidentsDTO.getIncidentId())")
     public CarIncidents save(CarIncidentsDTO carIncidentsDTO) {
         try {
             Car car = carRepository.findById(carIncidentsDTO.getCarId()).orElseThrow(() -> new NotFoundException("Car not found"));
@@ -99,6 +104,7 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "carIncidents", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('carIncidents', #id)")
     public void delete(Long id) {
         try {
             CarIncidents carIncidents = carIncidentsRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));

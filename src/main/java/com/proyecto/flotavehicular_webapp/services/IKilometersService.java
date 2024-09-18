@@ -15,5 +15,6 @@ public interface IKilometersService {
 
     void delete(Long id);
 
+    // Filter
     PageResponse<KilometersDTO> getByCarId(Long carId, int pageNumber, int pageSize);
 }

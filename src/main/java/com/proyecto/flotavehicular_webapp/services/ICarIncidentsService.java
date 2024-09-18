@@ -15,5 +15,6 @@ public interface ICarIncidentsService {
 
     void delete(Long id);
 
+    // Filter
     PageResponse<CarIncidentsDTO> getByCarId(Long id, int pageNumber, int pageSize);
 }

@@ -63,7 +63,12 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>com.proyecto</groupId>
+            <artifactId>flotavehicular</artifactId>
+            <version>1.0.0</version>
+            <systemPath>${project.basedir}/lib/flotavehicular.jar</systemPath>
+        </dependency>
     </dependencies>
 
     <build>
