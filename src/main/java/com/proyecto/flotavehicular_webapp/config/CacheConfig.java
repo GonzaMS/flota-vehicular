@@ -22,14 +22,16 @@ public class CacheConfig {
     public RedisConnectionFactory redisConnectionFactory() {
         return new LettuceConnectionFactory();
     }
+    
+    
 
     @Bean
     @Primary
-    public CacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
+    public CacheManager cacheManagerWithTTL(RedisConnectionFactory redisConnectionFactory) {
         logger.info(redisConnectionFactory.toString());
 
         RedisCacheConfiguration redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofMinutes(10));
+                .entryTtl(Duration.ofMinutes(5));
 
         return RedisCacheManager.builder(redisConnectionFactory)
                 .cacheDefaults(redisCacheConfiguration)
@@ -37,7 +39,7 @@ public class CacheConfig {
     }
 
     @Bean
-    public CacheManager cacheManagerWithouTtl(RedisConnectionFactory redisConnectionFactory) {
+    public CacheManager cacheManagerWithoutTtl(RedisConnectionFactory redisConnectionFactory) {
         logger.info(redisConnectionFactory.toString());
 
         RedisCacheConfiguration redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()

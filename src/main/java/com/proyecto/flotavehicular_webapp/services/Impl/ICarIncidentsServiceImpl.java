@@ -8,9 +8,12 @@ import com.proyecto.flotavehicular_webapp.repositories.ICarIncidentsRepository;
 import com.proyecto.flotavehicular_webapp.repositories.ICarRepository;
 import com.proyecto.flotavehicular_webapp.services.ICarIncidentsService;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
+import com.proyecto.flotavehicular_webapp.utils.RedisUtils;
 import org.hibernate.service.spi.ServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -26,6 +29,7 @@ import java.util.List;
 public class ICarIncidentsServiceImpl implements ICarIncidentsService {
 
     private final ICarIncidentsRepository carIncidentsRepository;
+    private final CacheManager cacheManager;
 
     private final ICarRepository carRepository;
 
@@ -33,9 +37,10 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
 
     private static final Logger logger = LoggerFactory.getLogger(ICarIncidentsServiceImpl.class);
 
-    public ICarIncidentsServiceImpl(ICarIncidentsRepository incidentRepository, ICarRepository carRepository) {
+    public ICarIncidentsServiceImpl(ICarIncidentsRepository incidentRepository, ICarRepository carRepository, CacheManager cacheManager) {
         this.carIncidentsRepository = incidentRepository;
         this.carRepository = carRepository;
+        this.cacheManager = cacheManager;
     }
 
     @Override
@@ -46,8 +51,18 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
 
             Page<CarIncidents> incidentPage = carIncidentsRepository.findAll(pageable);
 
-            return mapToPageResponse(incidentPage);
+            incidentPage.forEach(incidents -> {
+                String key = RedisUtils.CacheKeyGenerator("api_incidents_", incidents.getIncidentId());
+                Cache cache = cacheManager.getCache(key);
 
+                if (cache != null) {
+                    Object incidentsOnCache = cache.get(key, Object.class);
+                    if (incidentsOnCache == null) {
+                        cache.put(key, incidents);
+                    }
+                }
+            });
+            return mapToPageResponse(incidentPage);
         } catch (Exception e) {
             logger.error("Error getting all incidents: {}", e.getMessage());
             throw new ServiceException("Error getting all incidents");
@@ -64,7 +79,6 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
 
     @Override
     @Transactional
-    @CachePut(value = "carIncidents", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('carIncidents', #carIncidentsDTO.getIncidentId())")
     public CarIncidents save(CarIncidentsDTO carIncidentsDTO) {
         try {
             Car car = carRepository.findById(carIncidentsDTO.getCarId()).orElseThrow(() -> new NotFoundException("Car not found"));
@@ -84,6 +98,7 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
 
     @Override
     @Transactional
+    @CachePut(value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_carIncidents_', #id)")
     public void update(Long id, CarIncidentsDTO carIncidentsDTO) {
         try {
             CarIncidents carIncidents = carIncidentsRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
@@ -104,11 +119,17 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "carIncidents", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('carIncidents', #id)")
+    @CacheEvict(value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_carIncidents_', #id)")
     public void delete(Long id) {
         try {
             CarIncidents carIncidents = carIncidentsRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
             carIncidentsRepository.delete(carIncidents);
+            //Remove cache
+            String key = RedisUtils.CacheKeyGenerator("api_carIncidents_", id);
+            Cache cache = cacheManager.getCache("sd");
+            if (cache != null) {
+                cache.evict(key);
+            }
 
         } catch (NotFoundException e) {
             logger.warn("Incident with id {} not found", id);
@@ -121,6 +142,8 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
 
     // Filters
     @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_carIncidents_', #id)")
     public PageResponse<CarIncidentsDTO> getByCarId(Long id, int pageNumber, int pageSize) {
         try {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);

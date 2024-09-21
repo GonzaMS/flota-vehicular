@@ -35,7 +35,6 @@ public class ICarServiceImpl implements ICarService {
 
     private static final Logger logger = LoggerFactory.getLogger(ICarServiceImpl.class);
 
-
     public ICarServiceImpl(ICarRepository carRepository, CacheManager cacheManager) {
         this.carRepository = carRepository;
         this.cacheManager = cacheManager;
@@ -48,14 +47,12 @@ public class ICarServiceImpl implements ICarService {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
             Page<Car> carPage = carRepository.findAll(pageable);
 
-            // Put single car in cache
             carPage.forEach(car -> {
                 String key = RedisUtils.CacheKeyGenerator("api_car_", car.getCarId());
                 Cache cache = cacheManager.getCache(key);
 
                 if (cache != null) {
                     Object carOnCache = cache.get(key, Object.class);
-
                     if (carOnCache == null) {
                         cache.put(key, car);
                     }
@@ -70,7 +67,7 @@ public class ICarServiceImpl implements ICarService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "cars", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('cars', #id)")
+    @Cacheable(cacheManager = "cacheManagerWithoutTtl", value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_car_', #id)")
     public CarDTO getById(Long id) {
         Car car = carRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
         return mapToDTO(car);
@@ -78,7 +75,6 @@ public class ICarServiceImpl implements ICarService {
 
     @Override
     @Transactional
-    @CachePut(cacheManager = "cacheManagerWithouTtl", value = "cars", key = "'api_cars_'+ #carDTO.getCarId()")
     public Car save(CarDTO carDTO) {
         try {
             Car car = mapToEntity(carDTO);
@@ -91,7 +87,7 @@ public class ICarServiceImpl implements ICarService {
 
     @Override
     @Transactional
-    @CachePut(value = "cars", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('cars', #id)")
+    @CachePut(cacheManager = "cacheManagerWithoutTtl", value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_car_', #id)")
     public void update(Long id, CarDTO carDTO) {
         try {
             Car car = carRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
@@ -115,7 +111,7 @@ public class ICarServiceImpl implements ICarService {
 
     @Override
     @Transactional
-    @CacheEvict(cacheManager = "cacheManagerWithouTtl", value = "cars", key = "'api_cars_'+ #id")
+    @CacheEvict(cacheManager = "cacheManagerWithoutTtl", value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_car_', #id)")
     public void delete(Long id) {
         try {
             Car car = carRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
@@ -131,6 +127,7 @@ public class ICarServiceImpl implements ICarService {
 
     @Override
     @Transactional
+    @CachePut(cacheManager = "cacheManagerWithoutTtl", value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_car_', #id)")
     public void deactivate(Long id) {
         try {
             Car car = carRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
@@ -148,6 +145,7 @@ public class ICarServiceImpl implements ICarService {
     // Filters
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_car_', #state)")
     public PageResponse<CarDTO> getByState(String state, int pageNumber, int pageSize) {
         try {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
@@ -176,6 +174,7 @@ public class ICarServiceImpl implements ICarService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_car_', #brand)")
     public PageResponse<CarDTO> getByBrand(String brand, int pageNumber, int pageSize) {
         try {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
@@ -198,6 +197,7 @@ public class ICarServiceImpl implements ICarService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_car_', #model)")
     public PageResponse<CarDTO> getByModel(String model, int pageNumber, int pageSize) {
         try {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
@@ -222,6 +222,7 @@ public class ICarServiceImpl implements ICarService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_car_', #licensePlate)")
     public PageResponse<CarDTO> getByLicensePlate(String licensePlate, int pageNumber, int pageSize) {
         try {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
@@ -252,56 +253,8 @@ public class ICarServiceImpl implements ICarService {
                 .carLicensePlate(carDTO.getCarLicensePlate())
                 .carFabricationYear(carDTO.getCarFabricationYear())
                 .carState(carDTO.getCarState())
-//                .maintenanceHistories(carDTO.getMaintenanceHistories() != null ?
-//                        carDTO.getMaintenanceHistories().stream()
-//                                .map(this::mapToMaintenanceEntity) // Map to MaintenanceHistory entity
-//                                .toList()
-//                        : Collections.emptyList())
-//                .carIncidents(carDTO.getCarIncidents() != null ?
-//                        carDTO.getCarIncidents().stream()
-//                                .map(this::mapToCarIncidentsEntity) // Map to CarIncidents entity
-//                                .toList()
-//                        : Collections.emptyList())
-//                .carKilometers(carDTO.getCarKilometers() != null ?
-//                        carDTO.getCarKilometers().stream()
-//                                .map(this::mapToKilometersEntity) // Map to Kilometers entity
-//                                .toList()
-//                        : Collections.emptyList())
                 .build();
     }
-
-    // Mapping MaintenanceDTO to MaintenanceHistory entity
-//    private MaintenanceHistory mapToMaintenanceEntity(MaintenanceDTO maintenanceDTO) {
-//        return MaintenanceHistory.builder()
-//                .maintenanceId(maintenanceDTO.getMaintenanceId())
-//                .car(Car.builder().carId(maintenanceDTO.getCarId()).build())
-//                .maintenanceDate(maintenanceDTO.getMaintenanceDate())
-//                .maintenanceDescription(maintenanceDTO.getMaintenanceDescription())
-//                .maintenanceCost(maintenanceDTO.getMaintenanceCost())
-//                .maintenanceType(maintenanceDTO.getMaintenanceType())
-//                .build();
-//    }
-
-    // Mapping CarIncidentsDTO to CarIncidents entity
-//    private CarIncidents mapToCarIncidentsEntity(CarIncidentsDTO carIncidentsDTO) {
-//        return CarIncidents.builder()
-//                .incidentId(carIncidentsDTO.getIncidentId())
-//                .car(Car.builder().carId(carIncidentsDTO.getCarId()).build())
-//                .incidentDate(carIncidentsDTO.getIncidentDate())
-//                .incidentDescription(carIncidentsDTO.getIncidentDescription())
-//                .incidentType(carIncidentsDTO.getIncidentType())
-//                .build();
-//    }
-
-//    // Mapping KilometersDTO to Kilometers entity
-//    private Kilometers mapToKilometersEntity(KilometersDTO kilometersDTO) {
-//        return Kilometers.builder()
-//                .kilometersId(kilometersDTO.getKilometersId())
-//                .car(Car.builder().carId(kilometersDTO.getCarId()).build())
-//                .updateKmDate(kilometersDTO.getUpdateKmDate())
-//                .actualKm(kilometersDTO.getActualKm())
-//                .build();
-//    }
 
     private CarDTO mapToDTO(Car car) {
         CarDTO.CarDTOBuilder builder = CarDTO.builder()
@@ -314,64 +267,10 @@ public class ICarServiceImpl implements ICarService {
         return builder.build();
     }
 
-    // Mapping the Car object to DTO
-//    private CarDTO mapToDTO(Car car, boolean includeRelations) {
-//        CarDTO.CarDTOBuilder builder = CarDTO.builder()
-//                .carId(car.getCarId())
-//                .carBrand(car.getCarBrand())
-//                .carModel(car.getCarModel())
-//                .carLicensePlate(car.getCarLicensePlate())
-//                .carFabricationYear(car.getCarFabricationYear())
-//                .carState(car.getCarState());
-//
-//        if (includeRelations) {
-//            builder.maintenanceHistories(car.getMaintenanceHistories() != null ?
-//                            car.getMaintenanceHistories().stream().map(this::mapToMaintenanceDTO).toList() : Collections.emptyList())
-//                    .carIncidents(car.getCarIncidents() != null ?
-//                            car.getCarIncidents().stream().map(this::mapToCarIncidentsDTO).toList() : Collections.emptyList())
-//                    .carKilometers(car.getCarKilometers() != null ?
-//                            car.getCarKilometers().stream().map(this::mapToKilometersDTO).toList() : Collections.emptyList());
-//        }
-//        return builder.build();
-//    }
-
-    // Mapping CarIncidents dto to Entity
-//    private CarIncidentsDTO mapToCarIncidentsDTO(CarIncidents carIncidents) {
-//        return CarIncidentsDTO.builder()
-//                .incidentId(carIncidents.getIncidentId())
-//                .carId(carIncidents.getCar().getCarId())
-//                .incidentDate(carIncidents.getIncidentDate())
-//                .incidentDescription(carIncidents.getIncidentDescription())
-//                .incidentType(carIncidents.getIncidentType())
-//                .build();
-//    }
-
-    // Mapping MaintenanceHistory dto to Entity
-//    private MaintenanceDTO mapToMaintenanceDTO(MaintenanceHistory maintenanceHistory) {
-//        return MaintenanceDTO.builder()
-//                .maintenanceId(maintenanceHistory.getMaintenanceId())
-//                .carId(maintenanceHistory.getCar().getCarId())
-//                .maintenanceDate(maintenanceHistory.getMaintenanceDate())
-//                .maintenanceDescription(maintenanceHistory.getMaintenanceDescription())
-//                .maintenanceCost(maintenanceHistory.getMaintenanceCost())
-//                .maintenanceType(maintenanceHistory.getMaintenanceType())
-//                .build();
-//    }
-
-    // Mapping Kilometers dto to Entity
-//    private KilometersDTO mapToKilometersDTO(Kilometers kilometersDTO) {
-//        return KilometersDTO.builder()
-//                .kilometersId(kilometersDTO.getKilometersId())
-//                .carId(kilometersDTO.getCar().getCarId())
-//                .updateKmDate(kilometersDTO.getUpdateKmDate())
-//                .actualKm(kilometersDTO.getActualKm())
-//                .build();
-//    }
-
     // Page Response
     private PageResponse<CarDTO> mapToPageResponse(Page<Car> carPage) {
         List<CarDTO> carDTOList = carPage.stream()
-                .map(car -> mapToDTO(car))
+                .map(this::mapToDTO)
                 .toList();
 
         return PageResponse.of(
@@ -382,19 +281,4 @@ public class ICarServiceImpl implements ICarService {
                 carPage.getTotalPages(),
                 carPage.isLast());
     }
-
-    // Page Response
-//    private PageResponse<CarDTO> mapToPageResponse(Page<Car> carPage, Boolean includeRelations) {
-//        List<CarDTO> carDTOList = carPage.stream()
-//                .map(car -> mapToDTO(car, includeRelations))
-//                .toList();
-//
-//        return PageResponse.of(
-//                carDTOList,
-//                carPage.getNumber(),
-//                carPage.getSize(),
-//                carPage.getTotalElements(),
-//                carPage.getTotalPages(),
-//                carPage.isLast());
-//    }
 }

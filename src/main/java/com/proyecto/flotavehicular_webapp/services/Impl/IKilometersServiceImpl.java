@@ -8,9 +8,15 @@ import com.proyecto.flotavehicular_webapp.repositories.ICarRepository;
 import com.proyecto.flotavehicular_webapp.repositories.IKilometersRepository;
 import com.proyecto.flotavehicular_webapp.services.IKilometersService;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
+import com.proyecto.flotavehicular_webapp.utils.RedisUtils;
 import org.hibernate.service.spi.ServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,14 +30,16 @@ public class IKilometersServiceImpl implements IKilometersService {
 
     private final IKilometersRepository kilometersRepository;
     private final ICarRepository carRepository;
+    private final CacheManager cacheManager;
 
     private static final String KILOMETERS_NOT_FOUND = "Kilometers not found";
 
     private static final Logger logger = LoggerFactory.getLogger(IKilometersServiceImpl.class);
 
-    public IKilometersServiceImpl(IKilometersRepository kilometersRepository, ICarRepository carRepository) {
+    public IKilometersServiceImpl(IKilometersRepository kilometersRepository, ICarRepository carRepository, CacheManager cacheManager) {
         this.kilometersRepository = kilometersRepository;
         this.carRepository = carRepository;
+        this.cacheManager = cacheManager;
     }
 
     @Override
@@ -41,6 +49,17 @@ public class IKilometersServiceImpl implements IKilometersService {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
             Page<Kilometers> kilometersPage = kilometersRepository.findAll(pageable);
 
+            kilometersPage.forEach(kilometers -> {
+                String key = RedisUtils.CacheKeyGenerator("api_kilometers_", kilometers.getKilometersId());
+                Cache cache = cacheManager.getCache(key);
+
+                if (cache != null) {
+                    Object kilometersOnCache = cache.get(key, Object.class);
+                    if (kilometersOnCache == null) {
+                        cache.put(key, kilometers);
+                    }
+                }
+            });
             return mapToPageResponse(kilometersPage);
         } catch (Exception e) {
             logger.error("Error getting all kilometers: {}", e.getMessage());
@@ -50,6 +69,7 @@ public class IKilometersServiceImpl implements IKilometersService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(cacheManager = "cacheManagerWithoutTtl", value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_kilometers_', #id)")
     public KilometersDTO getById(Long id) {
         Kilometers kilometers = kilometersRepository.findById(id).orElseThrow(() -> new NotFoundException(KILOMETERS_NOT_FOUND));
         return mapToDTO(kilometers);
@@ -76,6 +96,7 @@ public class IKilometersServiceImpl implements IKilometersService {
 
     @Override
     @Transactional
+    @CachePut(cacheManager = "cacheManagerWithoutTtl", value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_kilometers_', #id)")
     public void update(Long id, KilometersDTO kilometersDTO) {
         try {
             Kilometers kilometers = kilometersRepository.findById(id).orElseThrow(() -> new NotFoundException(KILOMETERS_NOT_FOUND));
@@ -94,6 +115,7 @@ public class IKilometersServiceImpl implements IKilometersService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheManager = "cacheManagerWithoutTtl", value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_kilometers_', #id)")
     public void delete(Long id) {
         try {
             Kilometers kilometers = kilometersRepository.findById(id).orElseThrow(() -> new NotFoundException(KILOMETERS_NOT_FOUND));
@@ -110,19 +132,20 @@ public class IKilometersServiceImpl implements IKilometersService {
     // Filters
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<KilometersDTO> getByCarId(Long carId, int pageNumber, int pageSize) {
+    @Cacheable(cacheManager = "cacheManagerWithoutTtl", value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_kilometers_car_', #id)")
+    public PageResponse<KilometersDTO> getByCarId(Long id, int pageNumber, int pageSize) {
         try {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
 
-            Page<Kilometers> kilometersPage = kilometersRepository.findByCar_CarId(carId, pageable);
+            Page<Kilometers> kilometersPage = kilometersRepository.findByCar_CarId(id, pageable);
 
             if (kilometersPage.isEmpty()) {
-                throw new NotFoundException(KILOMETERS_NOT_FOUND + " for car with id: " + carId);
+                throw new NotFoundException(KILOMETERS_NOT_FOUND + " for car with id: " + id);
             }
 
             return mapToPageResponse(kilometersPage);
         } catch (NotFoundException e) {
-            logger.error("Kilometers not found for car with id: {}", carId);
+            logger.error("Kilometers not found for car with id: {}", id);
             throw e;
         } catch (Exception e) {
             logger.error("Error getting kilometers by carId: {}", e.getMessage());

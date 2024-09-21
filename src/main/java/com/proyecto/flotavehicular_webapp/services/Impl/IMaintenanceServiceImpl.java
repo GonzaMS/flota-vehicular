@@ -8,9 +8,15 @@ import com.proyecto.flotavehicular_webapp.repositories.ICarRepository;
 import com.proyecto.flotavehicular_webapp.repositories.IMaintenanceRepository;
 import com.proyecto.flotavehicular_webapp.services.IMaintenanceService;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
+import com.proyecto.flotavehicular_webapp.utils.RedisUtils;
 import org.hibernate.service.spi.ServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,14 +31,16 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
 
     private final IMaintenanceRepository maintenanceRepository;
     private final ICarRepository carRepository;
+    private final CacheManager cacheManager;
 
     private static final String NOTFOUND = "Maintenance not found";
 
     private static final Logger logger = LoggerFactory.getLogger(IMaintenanceServiceImpl.class);
 
-    public IMaintenanceServiceImpl(IMaintenanceRepository maintenanceRepository, ICarRepository carRepository) {
+    public IMaintenanceServiceImpl(IMaintenanceRepository maintenanceRepository, ICarRepository carRepository, CacheManager cacheManager) {
         this.maintenanceRepository = maintenanceRepository;
         this.carRepository = carRepository;
+        this.cacheManager = cacheManager;
     }
 
     @Override
@@ -41,6 +49,18 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
         try {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
             Page<MaintenanceHistory> maintenanceHistoryPage = maintenanceRepository.findAll(pageable);
+
+            maintenanceHistoryPage.forEach(maintenanceHistory -> {
+                String key = RedisUtils.CacheKeyGenerator("api_maintenance_", maintenanceHistory.getMaintenanceId());
+                Cache cache = cacheManager.getCache(key);
+
+                if (cache != null) {
+                    Object maintenanceOnCache = cache.get(key, Object.class);
+                    if (maintenanceOnCache == null) {
+                        cache.put(key, maintenanceHistory);
+                    }
+                }
+            });
 
             return mapToPageResponse(maintenanceHistoryPage);
         } catch (Exception e) {
@@ -51,6 +71,7 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(cacheManager = "cacheManagerWithoutTtl", value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_maintenance_', #id)")
     public MaintenanceDTO getById(Long id) {
         MaintenanceHistory maintenanceHistory = maintenanceRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
         return mapToDto(maintenanceHistory);
@@ -78,6 +99,7 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
 
     @Override
     @Transactional
+    @CachePut(cacheManager = "cacheManagerWithoutTtl", value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_maintenance_', #id)")
     public void update(Long id, MaintenanceDTO maintenanceDTO) {
         try {
             MaintenanceHistory maintenanceHistory = maintenanceRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
@@ -100,6 +122,7 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
 
     @Override
     @Transactional
+    @CacheEvict(cacheManager = "cacheManagerWithoutTtl", value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_maintenance_', #id)")
     public void delete(Long id) {
         MaintenanceHistory maintenanceHistory = maintenanceRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
         maintenanceRepository.delete(maintenanceHistory);
@@ -107,6 +130,7 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(cacheManager = "cacheManagerWithoutTtl", value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_maintenance_car_', #id)")
     public PageResponse<MaintenanceDTO> getByCarId(Long id, int pageNumber, int pageSize) {
         try {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
