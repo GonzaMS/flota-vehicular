@@ -31,15 +31,17 @@ public class IKilometersServiceImpl implements IKilometersService {
     private final IKilometersRepository kilometersRepository;
     private final ICarRepository carRepository;
     private final CacheManager cacheManager;
+    private final RedisServiceImpl redisService;
 
     private static final String KILOMETERS_NOT_FOUND = "Kilometers not found";
 
     private static final Logger logger = LoggerFactory.getLogger(IKilometersServiceImpl.class);
 
-    public IKilometersServiceImpl(IKilometersRepository kilometersRepository, ICarRepository carRepository, CacheManager cacheManager) {
+    public IKilometersServiceImpl(IKilometersRepository kilometersRepository, ICarRepository carRepository, CacheManager cacheManager, RedisServiceImpl redisService) {
         this.kilometersRepository = kilometersRepository;
         this.carRepository = carRepository;
         this.cacheManager = cacheManager;
+        this.redisService = redisService;
     }
 
     @Override
@@ -50,14 +52,14 @@ public class IKilometersServiceImpl implements IKilometersService {
             Page<Kilometers> kilometersPage = kilometersRepository.findAll(pageable);
 
             kilometersPage.forEach(kilometers -> {
-                String key = RedisUtils.CacheKeyGenerator("api_kilometers_", kilometers.getKilometersId());
+                String key = RedisUtils.CacheKeyGenerator("sd::api_kilometers_", kilometers.getKilometersId());
                 Cache cache = cacheManager.getCache(key);
 
-                if (cache != null) {
-                    Object kilometersOnCache = cache.get(key, Object.class);
-                    if (kilometersOnCache == null) {
-                        cache.put(key, kilometers);
-                    }
+                Object kilometersOnCache = redisService.get(key);
+
+                if (cache == null) {
+                    KilometersDTO kilometersDTO = mapToDTO(kilometers);
+                    redisService.save(key, kilometersDTO);
                 }
             });
             return mapToPageResponse(kilometersPage);
@@ -97,12 +99,16 @@ public class IKilometersServiceImpl implements IKilometersService {
     @Override
     @Transactional
     @CachePut(cacheManager = "cacheManagerWithoutTtl", value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_kilometers_', #id)")
-    public void update(Long id, KilometersDTO kilometersDTO) {
+    public KilometersDTO update(Long id, KilometersDTO kilometersDTO) {
         try {
             Kilometers kilometers = kilometersRepository.findById(id).orElseThrow(() -> new NotFoundException(KILOMETERS_NOT_FOUND));
+
             kilometers.setActualKm(kilometersDTO.getActualKm());
             kilometers.setUpdateKmDate(kilometersDTO.getUpdateKmDate());
+
             kilometersRepository.save(kilometers);
+
+            return mapToDTO(kilometers);
 
         } catch (NotFoundException e) {
             logger.error("Kilometers with id {} not found", id);

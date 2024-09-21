@@ -30,14 +30,18 @@ public class ICarServiceImpl implements ICarService {
 
     private final ICarRepository carRepository;
     private final CacheManager cacheManager;
+    private final com.proyecto.flotavehicular_webapp.services.Impl.RedisServiceImpl RedisServiceImpl;
 
     private static final String NOTFOUND = "Car not found";
 
     private static final Logger logger = LoggerFactory.getLogger(ICarServiceImpl.class);
+    private final RedisServiceImpl redisServiceImpl;
 
-    public ICarServiceImpl(ICarRepository carRepository, CacheManager cacheManager) {
+    public ICarServiceImpl(ICarRepository carRepository, CacheManager cacheManager, RedisServiceImpl RedisServiceImpl, RedisServiceImpl redisServiceImpl) {
         this.carRepository = carRepository;
         this.cacheManager = cacheManager;
+        this.RedisServiceImpl = RedisServiceImpl;
+        this.redisServiceImpl = redisServiceImpl;
     }
 
     @Override
@@ -48,14 +52,14 @@ public class ICarServiceImpl implements ICarService {
             Page<Car> carPage = carRepository.findAll(pageable);
 
             carPage.forEach(car -> {
-                String key = RedisUtils.CacheKeyGenerator("api_car_", car.getCarId());
+                String key = RedisUtils.CacheKeyGenerator("sd::api_car_", car.getCarId());
                 Cache cache = cacheManager.getCache(key);
 
-                if (cache != null) {
-                    Object carOnCache = cache.get(key, Object.class);
-                    if (carOnCache == null) {
-                        cache.put(key, car);
-                    }
+                Object carOnCache = redisServiceImpl.get(key);
+
+                if (carOnCache == null) {
+                    CarDTO carDTO = mapToDTO(car);
+                    RedisServiceImpl.save(key, carDTO);
                 }
             });
             return mapToPageResponse(carPage);
@@ -67,7 +71,7 @@ public class ICarServiceImpl implements ICarService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(cacheManager = "cacheManagerWithoutTtl", value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_car_', #id)")
+    @Cacheable(value = "sd", cacheManager = "cacheManagerWithoutTtl", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_car_', #id)")
     public CarDTO getById(Long id) {
         Car car = carRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
         return mapToDTO(car);
@@ -87,8 +91,8 @@ public class ICarServiceImpl implements ICarService {
 
     @Override
     @Transactional
-    @CachePut(cacheManager = "cacheManagerWithoutTtl", value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_car_', #id)")
-    public void update(Long id, CarDTO carDTO) {
+    @CachePut(value = "sd", cacheManager = "cacheManagerWithoutTtl", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_car_', #id)", unless = "#result == null")
+    public CarDTO update(Long id, CarDTO carDTO) {
         try {
             Car car = carRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
 
@@ -100,6 +104,8 @@ public class ICarServiceImpl implements ICarService {
 
             carRepository.save(car);
 
+            return mapToDTO(car);
+
         } catch (NotFoundException e) {
             logger.error("Car with id {} not found", id);
             throw e;
@@ -109,9 +115,10 @@ public class ICarServiceImpl implements ICarService {
         }
     }
 
+
     @Override
     @Transactional
-    @CacheEvict(cacheManager = "cacheManagerWithoutTtl", value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_car_', #id)")
+    @CacheEvict(value = "sd", cacheManager = "cacheManagerWithoutTtl", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_car_', #id)")
     public void delete(Long id) {
         try {
             Car car = carRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
@@ -127,7 +134,7 @@ public class ICarServiceImpl implements ICarService {
 
     @Override
     @Transactional
-    @CachePut(cacheManager = "cacheManagerWithoutTtl", value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_car_', #id)")
+    @CachePut(value = "sd", cacheManager = "cacheManagerWithoutTtl", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_car_', #id)")
     public void deactivate(Long id) {
         try {
             Car car = carRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));

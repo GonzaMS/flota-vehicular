@@ -13,7 +13,7 @@ public interface IMaintenanceService {
 
     MaintenanceHistory save(MaintenanceDTO maintenanceDTO);
 
-    void update(Long id, MaintenanceDTO maintenanceDTO);
+    MaintenanceDTO update(Long id, MaintenanceDTO maintenanceDTO);
 
     void delete(Long id);
 

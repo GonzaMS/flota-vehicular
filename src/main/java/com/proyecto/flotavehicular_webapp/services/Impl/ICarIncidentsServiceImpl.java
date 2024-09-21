@@ -88,7 +88,7 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
 
             return carIncidentsRepository.save(carIncidents);
         } catch (NotFoundException e) {
-            logger.warn("Car with id {} not found", carIncidentsDTO.getCarId());
+            logger.error("Car with id {} not found", carIncidentsDTO.getCarId());
             throw e;
         } catch (Exception e) {
             logger.error("Error saving incident: {}", e.getMessage());
@@ -99,7 +99,7 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
     @Override
     @Transactional
     @CachePut(value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_carIncidents_', #id)")
-    public void update(Long id, CarIncidentsDTO carIncidentsDTO) {
+    public CarIncidentsDTO update(Long id, CarIncidentsDTO carIncidentsDTO) {
         try {
             CarIncidents carIncidents = carIncidentsRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
 
@@ -108,8 +108,10 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
             carIncidents.setIncidentType(carIncidentsDTO.getIncidentType());
 
             carIncidentsRepository.save(carIncidents);
+
+            return mapToDTO(carIncidents);
         } catch (NotFoundException e) {
-            logger.warn("Incident with id {} not found", id);
+            logger.error("Incident with id {} not found", id);
             throw e;
         } catch (Exception e) {
             logger.error("Error updating incident: {}", e.getMessage());
@@ -124,7 +126,6 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
         try {
             CarIncidents carIncidents = carIncidentsRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
             carIncidentsRepository.delete(carIncidents);
-            //Remove cache
             String key = RedisUtils.CacheKeyGenerator("api_carIncidents_", id);
             Cache cache = cacheManager.getCache("sd");
             if (cache != null) {
@@ -132,7 +133,7 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
             }
 
         } catch (NotFoundException e) {
-            logger.warn("Incident with id {} not found", id);
+            logger.error("Incident with id {} not found", id);
             throw e;
         } catch (Exception e) {
             logger.error("Error deleting incident: {}", e.getMessage());
@@ -156,7 +157,7 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
 
             return mapToPageResponse(carIncidentsPage);
         } catch (NotFoundException e) {
-            logger.warn("Incidents not found for car with id: {}", id);
+            logger.error("Incidents not found for car with id: {}", id);
             throw e;
         } catch (Exception e) {
             logger.error("Error getting incidents by car id: {}", e.getMessage());

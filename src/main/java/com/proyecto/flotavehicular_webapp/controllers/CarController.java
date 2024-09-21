@@ -1,6 +1,8 @@
 package com.proyecto.flotavehicular_webapp.controllers;
 
 import com.proyecto.flotavehicular_webapp.dto.CarDTO;
+import com.proyecto.flotavehicular_webapp.dto.CarWithDetailsDTO;
+import com.proyecto.flotavehicular_webapp.services.Impl.IHeaderDetailsServiceImpl;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
 import com.proyecto.flotavehicular_webapp.models.Car;
 import com.proyecto.flotavehicular_webapp.services.ICarService;
@@ -18,9 +20,11 @@ public class CarController {
     private int defaultPageSize;
 
     private final ICarService carService;
+    private final IHeaderDetailsServiceImpl headerDetailsService;
 
-    public CarController(ICarService carService) {
+    public CarController(ICarService carService, IHeaderDetailsServiceImpl headerDetailsService) {
         this.carService = carService;
+        this.headerDetailsService = headerDetailsService;
     }
 
     @GetMapping
@@ -48,6 +52,24 @@ public class CarController {
         }
 
         return ResponseEntity.ok(car);
+    }
+
+    @GetMapping("/details/{id}")
+    public ResponseEntity<CarWithDetailsDTO> getCarDetailsById(
+            @PathVariable Long id,
+            @RequestParam(defaultValue = "0") int pageNumber,
+            @RequestParam(required = false) Integer pageSize
+    ) {
+
+        int effectivePageSize = (pageSize != null) ? pageSize : defaultPageSize;
+
+        CarWithDetailsDTO carWithDetails = headerDetailsService.getCarWithDetails(id, pageNumber, effectivePageSize);
+
+        if (carWithDetails == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(carWithDetails);
     }
 
     @PostMapping()

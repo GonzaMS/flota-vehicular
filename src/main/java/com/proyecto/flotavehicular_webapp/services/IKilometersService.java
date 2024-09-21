@@ -11,7 +11,7 @@ public interface IKilometersService {
 
     Kilometers save(KilometersDTO kilometersDTO);
 
-    void update(Long id, KilometersDTO kilometersDTO);
+    KilometersDTO update(Long id, KilometersDTO kilometersDTO);
 
     void delete(Long id);
 

@@ -100,7 +100,7 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
     @Override
     @Transactional
     @CachePut(cacheManager = "cacheManagerWithoutTtl", value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_maintenance_', #id)")
-    public void update(Long id, MaintenanceDTO maintenanceDTO) {
+    public MaintenanceDTO update(Long id, MaintenanceDTO maintenanceDTO) {
         try {
             MaintenanceHistory maintenanceHistory = maintenanceRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
 
@@ -110,6 +110,8 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
             maintenanceHistory.setMaintenanceType(maintenanceDTO.getMaintenanceType());
 
             maintenanceRepository.save(maintenanceHistory);
+
+            return mapToDto(maintenanceHistory);
 
         } catch (NotFoundException e) {
             logger.error("Maintenance with id {} not found", id);
@@ -143,7 +145,7 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
 
             return mapToPageResponse(maintenanceHistoryPage);
         } catch (NotFoundException e) {
-            logger.warn("Maintenance not found for car with id: {}", id);
+            logger.error("Maintenance not found for car with id: {}", id);
             throw e;
         } catch (Exception e) {
             logger.error("Error getting maintenance by car id: {}", e.getMessage());

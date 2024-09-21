@@ -11,7 +11,7 @@ public interface ICarIncidentsService {
 
     CarIncidents save(CarIncidentsDTO carIncidentsDTO);
 
-    void update(Long id, CarIncidentsDTO carIncidentsDTO);
+    CarIncidentsDTO update(Long id, CarIncidentsDTO carIncidentsDTO);
 
     void delete(Long id);
 

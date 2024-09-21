@@ -9,4 +9,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ICarIncidentsRepository extends JpaRepository<CarIncidents, Long> {
     Page<CarIncidents> findByCar_CarId(Long carId, Pageable pageable);
+
+    //List<CarIncidents> findByCar_CarId(Long carId);
 }

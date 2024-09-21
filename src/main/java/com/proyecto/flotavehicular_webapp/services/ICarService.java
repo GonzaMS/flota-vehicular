@@ -13,7 +13,7 @@ public interface ICarService {
 
     Car save(CarDTO carDTO);
 
-    void update(Long id, CarDTO carDTO);
+    CarDTO update(Long id, CarDTO carDTO);
 
     void delete(Long id);
 
