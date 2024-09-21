@@ -1,6 +1,7 @@
 package com.proyecto.flotavehicular_webapp.services.Impl;
 
 import com.proyecto.flotavehicular_webapp.dto.CarDTO;
+import com.proyecto.flotavehicular_webapp.services.Redis.RedisServiceImpl;
 import com.proyecto.flotavehicular_webapp.utils.EnumUtils;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
 import com.proyecto.flotavehicular_webapp.enums.ESTATES;
@@ -12,7 +13,6 @@ import com.proyecto.flotavehicular_webapp.utils.RedisUtils;
 import org.hibernate.service.spi.ServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -30,17 +30,15 @@ public class ICarServiceImpl implements ICarService {
 
     private final ICarRepository carRepository;
     private final CacheManager cacheManager;
-    private final com.proyecto.flotavehicular_webapp.services.Impl.RedisServiceImpl RedisServiceImpl;
+    private final RedisServiceImpl redisServiceImpl;
 
     private static final String NOTFOUND = "Car not found";
 
     private static final Logger logger = LoggerFactory.getLogger(ICarServiceImpl.class);
-    private final RedisServiceImpl redisServiceImpl;
 
-    public ICarServiceImpl(ICarRepository carRepository, CacheManager cacheManager, RedisServiceImpl RedisServiceImpl, RedisServiceImpl redisServiceImpl) {
+    public ICarServiceImpl(ICarRepository carRepository, CacheManager cacheManager, RedisServiceImpl redisServiceImpl) {
         this.carRepository = carRepository;
         this.cacheManager = cacheManager;
-        this.RedisServiceImpl = RedisServiceImpl;
         this.redisServiceImpl = redisServiceImpl;
     }
 
@@ -53,13 +51,12 @@ public class ICarServiceImpl implements ICarService {
 
             carPage.forEach(car -> {
                 String key = RedisUtils.CacheKeyGenerator("sd::api_car_", car.getCarId());
-                Cache cache = cacheManager.getCache(key);
 
                 Object carOnCache = redisServiceImpl.get(key);
 
                 if (carOnCache == null) {
                     CarDTO carDTO = mapToDTO(car);
-                    RedisServiceImpl.save(key, carDTO);
+                    redisServiceImpl.save(key, carDTO);
                 }
             });
             return mapToPageResponse(carPage);
@@ -114,7 +111,6 @@ public class ICarServiceImpl implements ICarService {
             throw new ServiceException("Error updating car");
         }
     }
-
 
     @Override
     @Transactional

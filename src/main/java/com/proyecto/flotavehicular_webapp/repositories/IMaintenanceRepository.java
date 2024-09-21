@@ -9,6 +9,4 @@ import java.util.List;
 
 public interface IMaintenanceRepository extends JpaRepository<MaintenanceHistory, Long> {
     Page<MaintenanceHistory> findByCar_CarId(Long carId, Pageable pageable);
-
-    //List<MaintenanceHistory> findByCar_CarId(Long carId);
 }

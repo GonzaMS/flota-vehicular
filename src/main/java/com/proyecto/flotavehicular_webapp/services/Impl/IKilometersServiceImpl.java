@@ -7,12 +7,12 @@ import com.proyecto.flotavehicular_webapp.models.Kilometers;
 import com.proyecto.flotavehicular_webapp.repositories.ICarRepository;
 import com.proyecto.flotavehicular_webapp.repositories.IKilometersRepository;
 import com.proyecto.flotavehicular_webapp.services.IKilometersService;
+import com.proyecto.flotavehicular_webapp.services.Redis.RedisServiceImpl;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
 import com.proyecto.flotavehicular_webapp.utils.RedisUtils;
 import org.hibernate.service.spi.ServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -53,11 +53,10 @@ public class IKilometersServiceImpl implements IKilometersService {
 
             kilometersPage.forEach(kilometers -> {
                 String key = RedisUtils.CacheKeyGenerator("sd::api_kilometers_", kilometers.getKilometersId());
-                Cache cache = cacheManager.getCache(key);
 
                 Object kilometersOnCache = redisService.get(key);
 
-                if (cache == null) {
+                if (kilometersOnCache == null) {
                     KilometersDTO kilometersDTO = mapToDTO(kilometers);
                     redisService.save(key, kilometersDTO);
                 }

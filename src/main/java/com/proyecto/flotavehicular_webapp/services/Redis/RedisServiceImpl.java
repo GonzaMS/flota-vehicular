@@ -1,4 +1,4 @@
-package com.proyecto.flotavehicular_webapp.services.Impl;
+package com.proyecto.flotavehicular_webapp.services.Redis;
 
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;

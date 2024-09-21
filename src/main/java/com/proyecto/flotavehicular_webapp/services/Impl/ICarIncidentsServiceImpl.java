@@ -30,7 +30,6 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
 
     private final ICarIncidentsRepository carIncidentsRepository;
     private final CacheManager cacheManager;
-
     private final ICarRepository carRepository;
 
     private static final String NOTFOUND = "CarIncidents not found";

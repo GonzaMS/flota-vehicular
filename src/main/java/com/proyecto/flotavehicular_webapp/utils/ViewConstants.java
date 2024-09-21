@@ -2,6 +2,9 @@ package com.proyecto.flotavehicular_webapp.utils;
 
 
 public class ViewConstants {
+    private ViewConstants() {
+    }
+
     public static final String REQUEST_HEADER = "Accept";
     public static final String HEADER_CONTAINS_HTML = "text/html";
 

@@ -23,7 +23,6 @@ public class KilometersController {
         this.kilometersService = kilometersService;
     }
 
-
     @GetMapping
     public ResponseEntity<PageResponse<KilometersDTO>> getAllKilometers(
             @RequestParam(defaultValue = "0") int pageNumber,
@@ -64,13 +63,11 @@ public class KilometersController {
         return ResponseEntity.ok().body(updatedKilometers);
     }
 
-
     @DeleteMapping("/{id}")
     public ResponseEntity<Kilometers> deleteKilometers(@PathVariable Long id) {
         kilometersService.delete(id);
         return ResponseEntity.noContent().build();
     }
-
 
     // Filters
     @GetMapping("/car/{carId}")

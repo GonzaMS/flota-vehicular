@@ -20,7 +20,6 @@ public class CarReportsController {
 
     Logger logger = org.slf4j.LoggerFactory.getLogger(CarReportsController.class);
 
-
     public CarReportsController(CarReports carReports) {
         this.carReports = carReports;
     }

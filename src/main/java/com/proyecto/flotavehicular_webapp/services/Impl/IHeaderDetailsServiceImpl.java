@@ -28,8 +28,8 @@ public class IHeaderDetailsServiceImpl {
     private final IKilometersRepository kilometersRepository;
     private final IMaintenanceRepository maintenanceRepository;
 
-
     private static final Logger logger = LoggerFactory.getLogger(IHeaderDetailsServiceImpl.class);
+
     private static final String NOTFOUND = "Car not found";
 
     public IHeaderDetailsServiceImpl(ICarRepository carRepository, ICarIncidentsRepository carIncidentsRepository,
@@ -68,8 +68,8 @@ public class IHeaderDetailsServiceImpl {
             logger.error("Details not found for car id {}: {}", id, e.getMessage());
             throw e;
         } catch (Exception e) {
-            logger.error("Error fetching car details for car id {}: {}", id, e.getMessage());
-            throw new ServiceException("Error fetching car details", e);
+            logger.error("Error updating car: {}", e.getMessage());
+            throw new ServiceException("Error updating car");
         }
     }
 
@@ -80,9 +80,12 @@ public class IHeaderDetailsServiceImpl {
             List<CarIncidents> incidents = incidentsDTOs.stream().map(this::mapToCarIncidentsEntity).toList();
             carIncidentsRepository.saveAll(incidents);
 
+        } catch (NotFoundException e) {
+            logger.error("Incident with id {} not found", carId);
+            throw e;
         } catch (Exception e) {
-            logger.error("Error updating incidents for car id {}: {}", carId, e.getMessage());
-            throw new ServiceException("Error updating incidents", e);
+            logger.error("Error updating car: {}", e.getMessage());
+            throw new ServiceException("Error updating car");
         }
     }
 
@@ -93,9 +96,12 @@ public class IHeaderDetailsServiceImpl {
             List<Kilometers> kilometers = kilometersDTOs.stream().map(this::mapToKilometersEntity).toList();
             kilometersRepository.saveAll(kilometers);
 
+        } catch (NotFoundException e) {
+            logger.error("Car with id {} not found", carId);
+            throw e;
         } catch (Exception e) {
-            logger.error("Error updating kilometers for car id {}: {}", carId, e.getMessage());
-            throw new ServiceException("Error updating kilometers", e);
+            logger.error("Error updating car: {}", e.getMessage());
+            throw new ServiceException("Error updating car");
         }
     }
 
