@@ -1,6 +1,6 @@
 package com.proyecto.flotavehicular_webapp.services.Impl;
 
-import com.proyecto.flotavehicular_webapp.dto.MaintenanceDTO;
+import com.proyecto.flotavehicular_webapp.dto.MaintenanceHistoryDTO;
 import com.proyecto.flotavehicular_webapp.exceptions.NotFoundException;
 import com.proyecto.flotavehicular_webapp.models.Car;
 import com.proyecto.flotavehicular_webapp.models.MaintenanceHistory;
@@ -9,9 +9,8 @@ import com.proyecto.flotavehicular_webapp.repositories.IMaintenanceRepository;
 import com.proyecto.flotavehicular_webapp.services.IMaintenanceService;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
 import com.proyecto.flotavehicular_webapp.utils.RedisUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.service.spi.ServiceException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
@@ -27,6 +26,7 @@ import java.util.List;
 
 
 @Service
+@Slf4j
 public class IMaintenanceServiceImpl implements IMaintenanceService {
 
     private final IMaintenanceRepository maintenanceRepository;
@@ -34,8 +34,6 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
     private final CacheManager cacheManager;
 
     private static final String NOTFOUND = "Maintenance not found";
-
-    private static final Logger logger = LoggerFactory.getLogger(IMaintenanceServiceImpl.class);
 
     public IMaintenanceServiceImpl(IMaintenanceRepository maintenanceRepository, ICarRepository carRepository, CacheManager cacheManager) {
         this.maintenanceRepository = maintenanceRepository;
@@ -45,13 +43,13 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
 
     @Override
     @Transactional(readOnly = true)
-    public PageResponse<MaintenanceDTO> getAll(int pageNumber, int pageSize) {
+    public PageResponse<MaintenanceHistoryDTO> getAll(int pageNumber, int pageSize) {
         try {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
             Page<MaintenanceHistory> maintenanceHistoryPage = maintenanceRepository.findAll(pageable);
 
             maintenanceHistoryPage.forEach(maintenanceHistory -> {
-                String key = RedisUtils.CacheKeyGenerator("api_maintenance_", maintenanceHistory.getMaintenanceId());
+                String key = RedisUtils.CacheKeyGenerator("api_maintenance_", maintenanceHistory.getId());
                 Cache cache = cacheManager.getCache(key);
 
                 if (cache != null) {
@@ -64,7 +62,7 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
 
             return mapToPageResponse(maintenanceHistoryPage);
         } catch (Exception e) {
-            logger.error("Error getting all maintenances: {}", e.getMessage());
+            log.error("Error getting all maintenances: {}", e.getMessage());
             throw new ServiceException("Error getting all maintenances");
         }
     }
@@ -72,14 +70,14 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(cacheManager = "cacheManagerWithoutTtl", value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_maintenance_', #id)")
-    public MaintenanceDTO getById(Long id) {
+    public MaintenanceHistoryDTO getById(Long id) {
         MaintenanceHistory maintenanceHistory = maintenanceRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
         return mapToDto(maintenanceHistory);
     }
 
     @Override
     @Transactional
-    public MaintenanceHistory save(MaintenanceDTO maintenanceDTO) {
+    public MaintenanceHistory save(MaintenanceHistoryDTO maintenanceDTO) {
         try {
             Car car = carRepository.findById(maintenanceDTO.getCarId()).orElseThrow(() -> new NotFoundException("Car not found"));
 
@@ -89,10 +87,10 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
             return maintenanceRepository.save(maintenanceHistory);
 
         } catch (NotFoundException e) {
-            logger.error("Car with id {} not found", maintenanceDTO.getCarId());
+            log.error("Car with id {} not found", maintenanceDTO.getCarId());
             throw e;
         } catch (Exception e) {
-            logger.error("Error saving maintenance: {}", e.getMessage());
+            log.error("Error saving maintenance: {}", e.getMessage());
             throw new ServiceException("Error saving maintenance");
         }
     }
@@ -100,24 +98,23 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
     @Override
     @Transactional
     @CachePut(cacheManager = "cacheManagerWithoutTtl", value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_maintenance_', #id)")
-    public MaintenanceDTO update(Long id, MaintenanceDTO maintenanceDTO) {
+    public MaintenanceHistoryDTO update(Long id, MaintenanceHistoryDTO maintenanceDTO) {
         try {
             MaintenanceHistory maintenanceHistory = maintenanceRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
 
-            maintenanceHistory.setMaintenanceDate(maintenanceDTO.getMaintenanceDate());
-            maintenanceHistory.setMaintenanceDescription(maintenanceDTO.getMaintenanceDescription());
-            maintenanceHistory.setMaintenanceCost(maintenanceDTO.getMaintenanceCost());
-            maintenanceHistory.setMaintenanceType(maintenanceDTO.getMaintenanceType());
+            maintenanceHistory.setDescription(maintenanceDTO.getDescription());
+            maintenanceHistory.setCost(maintenanceDTO.getCost());
+            maintenanceHistory.setType(maintenanceDTO.getType());
 
             maintenanceRepository.save(maintenanceHistory);
 
             return mapToDto(maintenanceHistory);
 
         } catch (NotFoundException e) {
-            logger.error("Maintenance with id {} not found", id);
+            log.error("Maintenance with id {} not found", id);
             throw e;
         } catch (Exception e) {
-            logger.error("Error updating maintenance: {}", e.getMessage());
+            log.error("Error updating maintenance: {}", e.getMessage());
             throw new ServiceException("Error updating maintenance");
         }
     }
@@ -133,11 +130,11 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
     @Override
     @Transactional(readOnly = true)
     @Cacheable(cacheManager = "cacheManagerWithoutTtl", value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_maintenance_car_', #id)")
-    public PageResponse<MaintenanceDTO> getByCarId(Long id, int pageNumber, int pageSize) {
+    public PageResponse<MaintenanceHistoryDTO> getByCarId(Long id, int pageNumber, int pageSize) {
         try {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
 
-            Page<MaintenanceHistory> maintenanceHistoryPage = maintenanceRepository.findByCar_CarId(id, pageable);
+            Page<MaintenanceHistory> maintenanceHistoryPage = maintenanceRepository.findByCarId(id, pageable);
 
             if (maintenanceHistoryPage.isEmpty()) {
                 throw new NotFoundException(NOTFOUND + " for car with id: " + id);
@@ -145,40 +142,42 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
 
             return mapToPageResponse(maintenanceHistoryPage);
         } catch (NotFoundException e) {
-            logger.error("Maintenance not found for car with id: {}", id);
+            log.error("Maintenance not found for car with id: {}", id);
             throw e;
         } catch (Exception e) {
-            logger.error("Error getting maintenance by car id: {}", e.getMessage());
+            log.error("Error getting maintenance by car id: {}", e.getMessage());
             throw new ServiceException("Error getting maintenance by car id");
         }
     }
 
     // Mappers
     // Map entity to DTO
-    private MaintenanceDTO mapToDto(MaintenanceHistory maintenanceHistory) {
-        return MaintenanceDTO.builder()
-                .maintenanceId(maintenanceHistory.getMaintenanceId())
-                .maintenanceDate(maintenanceHistory.getMaintenanceDate())
-                .maintenanceDescription(maintenanceHistory.getMaintenanceDescription())
-                .maintenanceCost(maintenanceHistory.getMaintenanceCost())
-                .maintenanceType(maintenanceHistory.getMaintenanceType())
-                .carId(maintenanceHistory.getCar().getCarId())
+    private MaintenanceHistoryDTO mapToDto(MaintenanceHistory maintenanceHistory) {
+        return MaintenanceHistoryDTO.builder()
+                .id(maintenanceHistory.getId())
+                .createdAt(maintenanceHistory.getCreatedAt())
+                .updatedAt(maintenanceHistory.getUpdatedAt())
+                .description(maintenanceHistory.getDescription())
+                .cost(maintenanceHistory.getCost())
+                .type(maintenanceHistory.getType())
+                .carId(maintenanceHistory.getCar().getId())
                 .build();
     }
 
     // Map DTO to entity
-    private MaintenanceHistory mapToEntity(MaintenanceDTO maintenanceDTO) {
+    private MaintenanceHistory mapToEntity(MaintenanceHistoryDTO maintenanceDTO) {
         return MaintenanceHistory.builder()
-                .maintenanceId(maintenanceDTO.getMaintenanceId())
-                .maintenanceDate(maintenanceDTO.getMaintenanceDate())
-                .maintenanceDescription(maintenanceDTO.getMaintenanceDescription())
-                .maintenanceCost(maintenanceDTO.getMaintenanceCost())
-                .maintenanceType(maintenanceDTO.getMaintenanceType())
+                .id(maintenanceDTO.getId())
+                .createdAt(maintenanceDTO.getCreatedAt())
+                .updatedAt(maintenanceDTO.getUpdatedAt())
+                .description(maintenanceDTO.getDescription())
+                .cost(maintenanceDTO.getCost())
+                .type(maintenanceDTO.getType())
                 .build();
     }
 
-    private PageResponse<MaintenanceDTO> mapToPageResponse(Page<MaintenanceHistory> maintenanceHistoryPage) {
-        List<MaintenanceDTO> maintenanceDTOList = maintenanceHistoryPage.stream()
+    private PageResponse<MaintenanceHistoryDTO> mapToPageResponse(Page<MaintenanceHistory> maintenanceHistoryPage) {
+        List<MaintenanceHistoryDTO> maintenanceDTOList = maintenanceHistoryPage.stream()
                 .map(this::mapToDto)
                 .toList();
 

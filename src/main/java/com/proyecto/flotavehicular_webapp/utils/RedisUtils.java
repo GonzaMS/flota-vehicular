@@ -4,7 +4,7 @@ public class RedisUtils {
     private RedisUtils() {
     }
 
-    public static String CacheKeyGenerator(String entity, Long id) {
-        return entity + "_" + id;
+    public static String CacheKeyGenerator(String entity, Object id) {
+        return entity + "_" + id.toString();
     }
 }

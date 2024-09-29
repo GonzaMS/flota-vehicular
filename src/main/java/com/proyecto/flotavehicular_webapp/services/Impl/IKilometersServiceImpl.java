@@ -10,9 +10,8 @@ import com.proyecto.flotavehicular_webapp.services.IKilometersService;
 import com.proyecto.flotavehicular_webapp.services.Redis.RedisServiceImpl;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
 import com.proyecto.flotavehicular_webapp.utils.RedisUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.service.spi.ServiceException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
@@ -26,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
+@Slf4j
 public class IKilometersServiceImpl implements IKilometersService {
 
     private final IKilometersRepository kilometersRepository;
@@ -34,8 +34,6 @@ public class IKilometersServiceImpl implements IKilometersService {
     private final RedisServiceImpl redisService;
 
     private static final String KILOMETERS_NOT_FOUND = "Kilometers not found";
-
-    private static final Logger logger = LoggerFactory.getLogger(IKilometersServiceImpl.class);
 
     public IKilometersServiceImpl(IKilometersRepository kilometersRepository, ICarRepository carRepository, CacheManager cacheManager, RedisServiceImpl redisService) {
         this.kilometersRepository = kilometersRepository;
@@ -52,7 +50,7 @@ public class IKilometersServiceImpl implements IKilometersService {
             Page<Kilometers> kilometersPage = kilometersRepository.findAll(pageable);
 
             kilometersPage.forEach(kilometers -> {
-                String key = RedisUtils.CacheKeyGenerator("sd::api_kilometers_", kilometers.getKilometersId());
+                String key = RedisUtils.CacheKeyGenerator("sd::api_kilometers_", kilometers.getId());
 
                 Object kilometersOnCache = redisService.get(key);
 
@@ -63,7 +61,7 @@ public class IKilometersServiceImpl implements IKilometersService {
             });
             return mapToPageResponse(kilometersPage);
         } catch (Exception e) {
-            logger.error("Error getting all kilometers: {}", e.getMessage());
+            log.error("Error getting all kilometers: {}", e.getMessage());
             throw new ServiceException("Error getting all kilometers");
         }
     }
@@ -87,10 +85,10 @@ public class IKilometersServiceImpl implements IKilometersService {
 
             return kilometersRepository.save(kilometers);
         } catch (NotFoundException e) {
-            logger.error("Car with id {} not found", kilometersDTO.getCarId());
+            log.error("Car with id {} not found", kilometersDTO.getCarId());
             throw e;
         } catch (Exception e) {
-            logger.error("Error saving kilometers: {}", e.getMessage());
+            log.error("Error saving kilometers: {}", e.getMessage());
             throw new ServiceException("Error saving kilometers");
         }
     }
@@ -103,17 +101,16 @@ public class IKilometersServiceImpl implements IKilometersService {
             Kilometers kilometers = kilometersRepository.findById(id).orElseThrow(() -> new NotFoundException(KILOMETERS_NOT_FOUND));
 
             kilometers.setActualKm(kilometersDTO.getActualKm());
-            kilometers.setUpdateKmDate(kilometersDTO.getUpdateKmDate());
 
             kilometersRepository.save(kilometers);
 
             return mapToDTO(kilometers);
 
         } catch (NotFoundException e) {
-            logger.error("Kilometers with id {} not found", id);
+            log.error("Kilometers with id {} not found", id);
             throw e;
         } catch (Exception e) {
-            logger.error("Error updating kilometers: {}", e.getMessage());
+            log.error("Error updating kilometers: {}", e.getMessage());
             throw new ServiceException("Error updating kilometers");
         }
     }
@@ -126,10 +123,10 @@ public class IKilometersServiceImpl implements IKilometersService {
             Kilometers kilometers = kilometersRepository.findById(id).orElseThrow(() -> new NotFoundException(KILOMETERS_NOT_FOUND));
             kilometersRepository.delete(kilometers);
         } catch (NotFoundException e) {
-            logger.error("Kilometers with id {} not found", id);
+            log.error("Kilometers with id {} not found", id);
             throw e;
         } catch (Exception e) {
-            logger.error("Error deleting kilometers: {}", e.getMessage());
+            log.error("Error deleting kilometers: {}", e.getMessage());
             throw new ServiceException("Error deleting kilometers");
         }
     }
@@ -142,7 +139,7 @@ public class IKilometersServiceImpl implements IKilometersService {
         try {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
 
-            Page<Kilometers> kilometersPage = kilometersRepository.findByCar_CarId(id, pageable);
+            Page<Kilometers> kilometersPage = kilometersRepository.findByCarId(id, pageable);
 
             if (kilometersPage.isEmpty()) {
                 throw new NotFoundException(KILOMETERS_NOT_FOUND + " for car with id: " + id);
@@ -150,10 +147,10 @@ public class IKilometersServiceImpl implements IKilometersService {
 
             return mapToPageResponse(kilometersPage);
         } catch (NotFoundException e) {
-            logger.error("Kilometers not found for car with id: {}", id);
+            log.error("Kilometers not found for car with id: {}", id);
             throw e;
         } catch (Exception e) {
-            logger.error("Error getting kilometers by carId: {}", e.getMessage());
+            log.error("Error getting kilometers by carId: {}", e.getMessage());
             throw new ServiceException("Error getting kilometers by carId");
         }
     }
@@ -162,34 +159,28 @@ public class IKilometersServiceImpl implements IKilometersService {
     // Map Entity to DTO
     private KilometersDTO mapToDTO(Kilometers kilometers) {
         return KilometersDTO.builder()
-                .kilometersId(kilometers.getKilometersId())
-                .updateKmDate(kilometers.getUpdateKmDate())
+                .id(kilometers.getId())
+                .createdAt(kilometers.getCreatedAt())
+                .updatedAt(kilometers.getUpdatedAt())
                 .actualKm(kilometers.getActualKm())
-                .carId(kilometers.getCar().getCarId())
+                .carId(kilometers.getCar().getId())
                 .build();
     }
 
     // Map DTO to Entity
     private Kilometers mapToEntity(KilometersDTO kilometersDTO) {
         return Kilometers.builder()
-                .kilometersId(kilometersDTO.getKilometersId())
-                .updateKmDate(kilometersDTO.getUpdateKmDate())
+                .id(kilometersDTO.getId())
+                .createdAt(kilometersDTO.getCreatedAt())
+                .updatedAt(kilometersDTO.getUpdatedAt())
                 .actualKm(kilometersDTO.getActualKm())
                 .build();
     }
 
     private PageResponse<KilometersDTO> mapToPageResponse(Page<Kilometers> kilometersPage) {
-        List<KilometersDTO> kilometersDTOList = kilometersPage.stream()
-                .map(this::mapToDTO)
-                .toList();
+        List<KilometersDTO> kilometersDTOList = kilometersPage.stream().map(this::mapToDTO).toList();
 
-        return PageResponse.of(
-                kilometersDTOList,
-                kilometersPage.getNumber(),
-                kilometersPage.getSize(),
-                kilometersPage.getTotalElements(),
-                kilometersPage.getTotalPages(),
-                kilometersPage.isLast());
+        return PageResponse.of(kilometersDTOList, kilometersPage.getNumber(), kilometersPage.getSize(), kilometersPage.getTotalElements(), kilometersPage.getTotalPages(), kilometersPage.isLast());
     }
 }
 

@@ -1,6 +1,6 @@
 package com.proyecto.flotavehicular_webapp.controllers;
 
-import com.proyecto.flotavehicular_webapp.dto.MaintenanceDTO;
+import com.proyecto.flotavehicular_webapp.dto.MaintenanceHistoryDTO;
 import com.proyecto.flotavehicular_webapp.models.MaintenanceHistory;
 import com.proyecto.flotavehicular_webapp.services.IMaintenanceService;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
@@ -24,13 +24,13 @@ public class MaintenanceController {
     }
 
     @GetMapping
-    public ResponseEntity<PageResponse<MaintenanceDTO>> getAllMaintenances(
+    public ResponseEntity<PageResponse<MaintenanceHistoryDTO>> getAllMaintenances(
             @RequestParam(defaultValue = "0") int pageNumber,
             @RequestParam(required = false) Integer pageSize) {
 
         int effectivePageSize = (pageSize != null) ? pageSize : defaultPageSize;
 
-        PageResponse<MaintenanceDTO> maintenanceDTOPageResponse = maintenanceService.getAll(pageNumber, effectivePageSize);
+        PageResponse<MaintenanceHistoryDTO> maintenanceDTOPageResponse = maintenanceService.getAll(pageNumber, effectivePageSize);
 
         if (maintenanceDTOPageResponse.items().isEmpty()) {
             return ResponseEntity.noContent().build();
@@ -40,45 +40,45 @@ public class MaintenanceController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<MaintenanceDTO> getMaintenanceById(@PathVariable Long id) {
-        MaintenanceDTO maintenance = maintenanceService.getById(id);
+    public ResponseEntity<MaintenanceHistoryDTO> getMaintenanceById(@PathVariable Long id) {
+        MaintenanceHistoryDTO maintenance = maintenanceService.getById(id);
         return ResponseEntity.ok(maintenance);
     }
 
     @PostMapping
-    public ResponseEntity<MaintenanceHistory> saveMaintenance(@Valid @RequestBody MaintenanceDTO maintenanceDTO) {
+    public ResponseEntity<MaintenanceHistory> saveMaintenance(@Valid @RequestBody MaintenanceHistoryDTO maintenanceDTO) {
         MaintenanceHistory newMaintenance = maintenanceService.save(maintenanceDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(newMaintenance);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<MaintenanceDTO> updateMaintenance(
+    public ResponseEntity<MaintenanceHistoryDTO> updateMaintenance(
             @PathVariable Long id,
-            @Valid @RequestBody MaintenanceDTO maintenanceDTO) {
+            @Valid @RequestBody MaintenanceHistoryDTO maintenanceDTO) {
 
         maintenanceService.update(id, maintenanceDTO);
 
-        MaintenanceDTO updatedMaintenance = maintenanceService.getById(id);
+        MaintenanceHistoryDTO updatedMaintenance = maintenanceService.getById(id);
 
         return ResponseEntity.ok().body(updatedMaintenance);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<MaintenanceHistory> deleteMaintenance(@PathVariable Long id) {
+    public ResponseEntity<Boolean> deleteMaintenance(@PathVariable Long id) {
         maintenanceService.delete(id);
         return ResponseEntity.ok().build();
     }
 
     // Filters
     @GetMapping("/car/{carId}")
-    public ResponseEntity<PageResponse<MaintenanceDTO>> getMaintenancesByCarId(
+    public ResponseEntity<PageResponse<MaintenanceHistoryDTO>> getMaintenancesByCarId(
             @PathVariable Long carId,
             @RequestParam(defaultValue = "0") int pageNumber,
             @RequestParam(required = false) Integer pageSize) {
 
         int effectivePageSize = (pageSize != null) ? pageSize : defaultPageSize;
 
-        PageResponse<MaintenanceDTO> maintenanceDTOPageResponse = maintenanceService.getByCarId(carId, pageNumber, effectivePageSize);
+        PageResponse<MaintenanceHistoryDTO> maintenanceDTOPageResponse = maintenanceService.getByCarId(carId, pageNumber, effectivePageSize);
 
         if (maintenanceDTOPageResponse.items().isEmpty()) {
             return ResponseEntity.noContent().build();

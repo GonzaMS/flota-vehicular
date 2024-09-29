@@ -10,11 +10,11 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ICarRepository extends JpaRepository<Car, Long> {
 
-    Page<Car> findByCarState(ESTATES carState, Pageable pageable);
+    Page<Car> findByState(ESTATES carState, Pageable pageable);
 
-    Page<Car> findByCarBrand(String carBrand, Pageable pageable);
+    Page<Car> findByBrand(String carBrand, Pageable pageable);
 
-    Page<Car> findByCarModel(String carModel, Pageable pageable);
+    Page<Car> findByModel(String carModel, Pageable pageable);
 
-    Page<Car> findByCarLicensePlate(String carLicensePlate, Pageable pageable);
+    Page<Car> findByLicensePlate(String carLicensePlate, Pageable pageable);
 }

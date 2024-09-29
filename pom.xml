@@ -55,19 +55,18 @@
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+        <dependency>
             <groupId>net.sf.jasperreports</groupId>
             <artifactId>jasperreports</artifactId>
             <version>6.19.0</version>
         </dependency>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-redis</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.proyecto</groupId>
             <artifactId>flotavehicular</artifactId>
             <version>1.0.0</version>
-            <systemPath>${project.basedir}/lib/flotavehicular.jar</systemPath>
         </dependency>
     </dependencies>
 

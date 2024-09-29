@@ -64,7 +64,7 @@ public class KilometersController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Kilometers> deleteKilometers(@PathVariable Long id) {
+    public ResponseEntity<Boolean> deleteKilometers(@PathVariable Long id) {
         kilometersService.delete(id);
         return ResponseEntity.noContent().build();
     }

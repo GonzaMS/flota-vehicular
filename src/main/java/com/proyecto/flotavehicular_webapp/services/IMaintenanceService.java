@@ -1,22 +1,22 @@
 package com.proyecto.flotavehicular_webapp.services;
 
 
-import com.proyecto.flotavehicular_webapp.dto.MaintenanceDTO;
+import com.proyecto.flotavehicular_webapp.dto.MaintenanceHistoryDTO;
 import com.proyecto.flotavehicular_webapp.models.MaintenanceHistory;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
 
 
 public interface IMaintenanceService {
-    PageResponse<MaintenanceDTO> getAll(int pageNumber, int pageSize);
+    PageResponse<MaintenanceHistoryDTO> getAll(int pageNumber, int pageSize);
 
-    MaintenanceDTO getById(Long id);
+    MaintenanceHistoryDTO getById(Long id);
 
-    MaintenanceHistory save(MaintenanceDTO maintenanceDTO);
+    MaintenanceHistory save(MaintenanceHistoryDTO maintenanceDTO);
 
-    MaintenanceDTO update(Long id, MaintenanceDTO maintenanceDTO);
+    MaintenanceHistoryDTO update(Long id, MaintenanceHistoryDTO maintenanceDTO);
 
     void delete(Long id);
 
     // Filter
-    PageResponse<MaintenanceDTO> getByCarId(Long id, int pageNumber, int pageSize);
+    PageResponse<MaintenanceHistoryDTO> getByCarId(Long id, int pageNumber, int pageSize);
 }

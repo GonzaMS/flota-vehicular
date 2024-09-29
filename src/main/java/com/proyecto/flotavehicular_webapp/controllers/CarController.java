@@ -1,7 +1,6 @@
 package com.proyecto.flotavehicular_webapp.controllers;
 
-import com.proyecto.flotavehicular_webapp.dto.CarDTO;
-import com.proyecto.flotavehicular_webapp.dto.CarWithDetailsDTO;
+import com.proyecto.flotavehicular_webapp.dto.*;
 import com.proyecto.flotavehicular_webapp.services.Impl.IHeaderDetailsServiceImpl;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
 import com.proyecto.flotavehicular_webapp.models.Car;
@@ -11,6 +10,8 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/cars")
@@ -90,10 +91,37 @@ public class CarController {
         return ResponseEntity.ok().body(updateCar);
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Car> deleteCar(@PathVariable Long id) {
-        carService.delete(id);
+    @PutMapping("/{id}/incidents")
+    public ResponseEntity<Void> updateCarIncidents(
+            @PathVariable Long id,
+            @RequestBody List<CarIncidentsDTO> incidentsDTOs) {
+
+        headerDetailsService.updateIncidents(id, incidentsDTOs);
         return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/{id}/kilometers")
+    public ResponseEntity<Void> updateCarKilometers(
+            @PathVariable Long id,
+            @RequestBody List<KilometersDTO> kilometersDTOs) {
+
+        headerDetailsService.updateKilometers(id, kilometersDTOs);
+        return ResponseEntity.ok().build();
+    }
+
+    @PutMapping("/{id}/maintenance")
+    public ResponseEntity<Void> updateCarMaintenance(
+            @PathVariable Long id,
+            @RequestBody List<MaintenanceHistoryDTO> maintenanceDTOs) {
+
+        headerDetailsService.updateMaintenance(id, maintenanceDTOs);
+        return ResponseEntity.ok().build();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Boolean> deleteCar(@PathVariable Long id) {
+        carService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/deactivate/{id}")

@@ -9,5 +9,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface IKilometersRepository extends JpaRepository<Kilometers, Long> {
-    Page<Kilometers> findByCar_CarId(Long carId, Pageable pageable);
+    Page<Kilometers> findByCarId(Long carId, Pageable pageable);
 }

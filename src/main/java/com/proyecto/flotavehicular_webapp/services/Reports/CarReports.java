@@ -1,4 +1,4 @@
-package com.proyecto.flotavehicular_webapp.services;
+package com.proyecto.flotavehicular_webapp.services.Reports;
 
 import com.proyecto.flotavehicular_webapp.models.Car;
 import com.proyecto.flotavehicular_webapp.repositories.ICarRepository;

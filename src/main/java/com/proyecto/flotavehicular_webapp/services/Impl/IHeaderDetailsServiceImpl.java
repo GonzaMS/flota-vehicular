@@ -2,14 +2,16 @@ package com.proyecto.flotavehicular_webapp.services.Impl;
 
 import com.proyecto.flotavehicular_webapp.dto.*;
 import com.proyecto.flotavehicular_webapp.exceptions.NotFoundException;
-import com.proyecto.flotavehicular_webapp.models.*;
-import com.proyecto.flotavehicular_webapp.repositories.ICarRepository;
+import com.proyecto.flotavehicular_webapp.models.Car;
+import com.proyecto.flotavehicular_webapp.models.CarIncidents;
+import com.proyecto.flotavehicular_webapp.models.Kilometers;
+import com.proyecto.flotavehicular_webapp.models.MaintenanceHistory;
 import com.proyecto.flotavehicular_webapp.repositories.ICarIncidentsRepository;
+import com.proyecto.flotavehicular_webapp.repositories.ICarRepository;
 import com.proyecto.flotavehicular_webapp.repositories.IKilometersRepository;
 import com.proyecto.flotavehicular_webapp.repositories.IMaintenanceRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.service.spi.ServiceException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -21,14 +23,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
+@Slf4j
 public class IHeaderDetailsServiceImpl {
 
     private final ICarRepository carRepository;
     private final ICarIncidentsRepository carIncidentsRepository;
     private final IKilometersRepository kilometersRepository;
     private final IMaintenanceRepository maintenanceRepository;
-
-    private static final Logger logger = LoggerFactory.getLogger(IHeaderDetailsServiceImpl.class);
 
     private static final String NOTFOUND = "Car not found";
 
@@ -48,14 +49,14 @@ public class IHeaderDetailsServiceImpl {
 
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
 
-            Page<CarIncidents> incidentsPage = carIncidentsRepository.findByCar_CarId(id, pageable);
-            Page<Kilometers> kilometersPage = kilometersRepository.findByCar_CarId(id, pageable);
-            Page<MaintenanceHistory> maintenancePage = maintenanceRepository.findByCar_CarId(id, pageable);
+            Page<CarIncidents> incidentsPage = carIncidentsRepository.findByCarId(id, pageable);
+            Page<Kilometers> kilometersPage = kilometersRepository.findByCarId(id, pageable);
+            Page<MaintenanceHistory> maintenancePage = maintenanceRepository.findByCarId(id, pageable);
 
             CarDTO carDTO = mapToCarDTO(car);
             List<CarIncidentsDTO> incidentDTOs = incidentsPage.stream().map(this::mapToCarIncidentsDTO).toList();
             List<KilometersDTO> kilometersDTOs = kilometersPage.stream().map(this::mapToKilometersDTO).toList();
-            List<MaintenanceDTO> maintenanceDTOs = maintenancePage.stream().map(this::mapToMaintenanceDTO).toList();
+            List<MaintenanceHistoryDTO> maintenanceDTOs = maintenancePage.stream().map(this::mapToMaintenanceDTO).toList();
 
             return CarWithDetailsDTO.builder()
                     .car(carDTO)
@@ -63,12 +64,8 @@ public class IHeaderDetailsServiceImpl {
                     .kilometers(kilometersDTOs)
                     .maintenance(maintenanceDTOs)
                     .build();
-
-        } catch (NotFoundException e) {
-            logger.error("Details not found for car id {}: {}", id, e.getMessage());
-            throw e;
         } catch (Exception e) {
-            logger.error("Error updating car: {}", e.getMessage());
+            log.error("Error updating car: {}", e.getMessage());
             throw new ServiceException("Error updating car");
         }
     }
@@ -81,10 +78,10 @@ public class IHeaderDetailsServiceImpl {
             carIncidentsRepository.saveAll(incidents);
 
         } catch (NotFoundException e) {
-            logger.error("Incident with id {} not found", carId);
+            log.error("Incident with id {} not found", carId);
             throw e;
         } catch (Exception e) {
-            logger.error("Error updating car: {}", e.getMessage());
+            log.error("Error updating car: {}", e.getMessage());
             throw new ServiceException("Error updating car");
         }
     }
@@ -97,52 +94,71 @@ public class IHeaderDetailsServiceImpl {
             kilometersRepository.saveAll(kilometers);
 
         } catch (NotFoundException e) {
-            logger.error("Car with id {} not found", carId);
+            log.error("Car with id {} not found", carId);
             throw e;
         } catch (Exception e) {
-            logger.error("Error updating car: {}", e.getMessage());
+            log.error("Error updating car: {}", e.getMessage());
+            throw new ServiceException("Error updating car");
+        }
+    }
+
+    @Transactional
+    @CacheEvict(value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('car_with_details_', #carId)")
+    public void updateMaintenance(Long carId, List<MaintenanceHistoryDTO> maintenanceDTOs) {
+        try {
+            List<MaintenanceHistory> maintenance = maintenanceDTOs.stream().map(this::mapToMaintenanceEntity).toList();
+            maintenanceRepository.saveAll(maintenance);
+
+        } catch (NotFoundException e) {
+            log.error("Car with id {} not found", carId);
+            throw e;
+        } catch (Exception e) {
+            log.error("Error updating car: {}", e.getMessage());
             throw new ServiceException("Error updating car");
         }
     }
 
     private CarDTO mapToCarDTO(Car car) {
         return CarDTO.builder()
-                .carId(car.getCarId())
-                .carBrand(car.getCarBrand())
-                .carModel(car.getCarModel())
-                .carLicensePlate(car.getCarLicensePlate())
-                .carFabricationYear(car.getCarFabricationYear())
-                .carState(car.getCarState())
+                .id(car.getId())
+                .brand(car.getBrand())
+                .model(car.getModel())
+                .licensePlate(car.getLicensePlate())
+                .fabricationYear(car.getFabricationYear())
+                .state(car.getState())
                 .build();
     }
 
     private CarIncidentsDTO mapToCarIncidentsDTO(CarIncidents carIncidents) {
         return CarIncidentsDTO.builder()
-                .incidentId(carIncidents.getIncidentId())
-                .incidentDescription(carIncidents.getIncidentDescription())
-                .incidentDate(carIncidents.getIncidentDate())
-                .incidentType(carIncidents.getIncidentType())
-                .carId(carIncidents.getCar().getCarId())
+                .id(carIncidents.getId())
+                .description(carIncidents.getDescription())
+                .createdAt(carIncidents.getCreatedAt())
+                .updatedAt(carIncidents.getUpdatedAt())
+                .type(carIncidents.getType())
+                .carId(carIncidents.getCar().getId())
                 .build();
     }
 
     private KilometersDTO mapToKilometersDTO(Kilometers kilometers) {
         return KilometersDTO.builder()
-                .kilometersId(kilometers.getKilometersId())
+                .id(kilometers.getId())
                 .actualKm(kilometers.getActualKm())
-                .updateKmDate(kilometers.getUpdateKmDate())
-                .carId(kilometers.getCar().getCarId())
+                .createdAt(kilometers.getCreatedAt())
+                .updatedAt(kilometers.getUpdatedAt())
+                .carId(kilometers.getCar().getId())
                 .build();
     }
 
-    private MaintenanceDTO mapToMaintenanceDTO(MaintenanceHistory maintenance) {
-        return MaintenanceDTO.builder()
-                .maintenanceId(maintenance.getMaintenanceId())
-                .maintenanceDate(maintenance.getMaintenanceDate())
-                .maintenanceDescription(maintenance.getMaintenanceDescription())
-                .maintenanceCost(maintenance.getMaintenanceCost())
-                .maintenanceType(maintenance.getMaintenanceType())
-                .carId(maintenance.getCar().getCarId())
+    private MaintenanceHistoryDTO mapToMaintenanceDTO(MaintenanceHistory maintenance) {
+        return MaintenanceHistoryDTO.builder()
+                .id(maintenance.getId())
+                .createdAt(maintenance.getCreatedAt())
+                .updatedAt(maintenance.getUpdatedAt())
+                .description(maintenance.getDescription())
+                .cost(maintenance.getCost())
+                .type(maintenance.getType())
+                .carId(maintenance.getCar().getId())
                 .build();
     }
 
@@ -150,10 +166,11 @@ public class IHeaderDetailsServiceImpl {
         Car car = carRepository.findById(carIncidentsDTO.getCarId()).orElseThrow(() -> new NotFoundException(NOTFOUND));
 
         return CarIncidents.builder()
-                .incidentId(carIncidentsDTO.getIncidentId())
-                .incidentDescription(carIncidentsDTO.getIncidentDescription())
-                .incidentDate(carIncidentsDTO.getIncidentDate())
-                .incidentType(carIncidentsDTO.getIncidentType())
+                .id(carIncidentsDTO.getId())
+                .description(carIncidentsDTO.getDescription())
+                .createdAt(carIncidentsDTO.getCreatedAt())
+                .updatedAt(carIncidentsDTO.getUpdatedAt())
+                .type(carIncidentsDTO.getType())
                 .car(car)
                 .build();
     }
@@ -162,9 +179,24 @@ public class IHeaderDetailsServiceImpl {
         Car car = carRepository.findById(kilometersDTO.getCarId()).orElseThrow(() -> new NotFoundException(NOTFOUND));
 
         return Kilometers.builder()
-                .kilometersId(kilometersDTO.getKilometersId())
+                .id(kilometersDTO.getId())
                 .actualKm(kilometersDTO.getActualKm())
-                .updateKmDate(kilometersDTO.getUpdateKmDate())
+                .createdAt(kilometersDTO.getCreatedAt())
+                .updatedAt(kilometersDTO.getUpdatedAt())
+                .car(car)
+                .build();
+    }
+
+    private MaintenanceHistory mapToMaintenanceEntity(MaintenanceHistoryDTO maintenanceDTO) {
+        Car car = carRepository.findById(maintenanceDTO.getCarId()).orElseThrow(() -> new NotFoundException(NOTFOUND));
+
+        return MaintenanceHistory.builder()
+                .id(maintenanceDTO.getId())
+                .createdAt(maintenanceDTO.getCreatedAt())
+                .updatedAt(maintenanceDTO.getUpdatedAt())
+                .description(maintenanceDTO.getDescription())
+                .cost(maintenanceDTO.getCost())
+                .type(maintenanceDTO.getType())
                 .car(car)
                 .build();
     }

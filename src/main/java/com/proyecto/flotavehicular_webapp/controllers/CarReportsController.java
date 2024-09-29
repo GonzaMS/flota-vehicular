@@ -1,10 +1,10 @@
 package com.proyecto.flotavehicular_webapp.controllers;
 
 
-import com.proyecto.flotavehicular_webapp.services.CarReports;
+import com.proyecto.flotavehicular_webapp.services.Reports.CarReports;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import net.sf.jasperreports.engine.JRException;
-import org.slf4j.Logger;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,11 +14,10 @@ import java.io.IOException;
 
 @RestController
 @RequestMapping("/api/v1/car-reports")
+@Slf4j
 public class CarReportsController {
 
     private final CarReports carReports;
-
-    Logger logger = org.slf4j.LoggerFactory.getLogger(CarReportsController.class);
 
     public CarReportsController(CarReports carReports) {
         this.carReports = carReports;
@@ -29,7 +28,7 @@ public class CarReportsController {
         try {
             carReports.exportReport(response);
         } catch (JRException | IOException e) {
-            logger.error("Error exporting car reports", e);
+            log.error("Error exporting car reports", e);
         }
     }
 }

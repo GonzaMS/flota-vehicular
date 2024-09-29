@@ -15,6 +15,10 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -88,7 +92,7 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorObject, HttpStatus.BAD_REQUEST);
     }
 
-    // 404
+    //404
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public Object handleMethodArgumentNotValidException(MethodArgumentNotValidException ex, HttpServletRequest request) {
         String acceptHeader = request.getHeader(ViewConstants.REQUEST_HEADER);
@@ -99,15 +103,21 @@ public class GlobalExceptionHandler {
             return mav;
         }
 
+        Set<String> errors = new HashSet<>();
+        ex.getBindingResult().getFieldErrors().forEach(error -> {
+            errors.add(error.getField() + ": " + error.getDefaultMessage());
+        });
+
         ErrorDTO errorObject = new ErrorDTO(
                 request.getRequestURI(),
-                "Not Found",
+                "Validation Failed",
                 ex.getMessage(),
                 LocalDateTime.now().format(FORMATTER),
-                HttpStatus.NOT_FOUND.value()
+                HttpStatus.BAD_REQUEST.value(),
+                errors
         );
 
-        return new ResponseEntity<>(errorObject, HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(errorObject, HttpStatus.BAD_REQUEST);
     }
 
     // 400

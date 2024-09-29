@@ -29,6 +29,8 @@ public class CacheConfig {
 
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
+        logger.info("Creating Redis template");
+        
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(connectionFactory);
         template.setKeySerializer(new StringRedisSerializer());
@@ -40,10 +42,12 @@ public class CacheConfig {
     @Bean
     @Primary
     public CacheManager cacheManagerWithTTL(RedisConnectionFactory redisConnectionFactory) {
+        logger.info("Creating cache manager with TTL");
+
         RedisCacheConfiguration redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
                 .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer())) // Use JSON
-                .entryTtl(Duration.ofMinutes(10));
+                .entryTtl(Duration.ofMinutes(9));
 
         return RedisCacheManager.builder(redisConnectionFactory)
                 .cacheDefaults(redisCacheConfiguration)
@@ -52,6 +56,8 @@ public class CacheConfig {
 
     @Bean
     public CacheManager cacheManagerWithoutTtl(RedisConnectionFactory redisConnectionFactory) {
+        logger.info("Creating cache manager without TTL");
+
         RedisCacheConfiguration redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
                 .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer())) // Use JSON
