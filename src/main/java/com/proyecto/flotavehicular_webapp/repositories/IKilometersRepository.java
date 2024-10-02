@@ -14,4 +14,6 @@ public interface IKilometersRepository extends JpaRepository<Kilometers, Long> {
     Page<Kilometers> findByCarId(Long carId, Pageable pageable);
 
     Page<Kilometers> findByCreatedAtBetween(Date startDate, Date endDate, Pageable pageable);
+
+    Page<Kilometers> findByCarIdAndCreatedAtBetween(Long carId, Date startDate, Date endDate, Pageable pageable);
 }
