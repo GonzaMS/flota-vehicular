@@ -3,6 +3,7 @@ package com.proyecto.flotavehicular_webapp.controllers;
 import com.proyecto.flotavehicular_webapp.dto.CarIncidentsDTO;
 import com.proyecto.flotavehicular_webapp.models.CarIncidents;
 import com.proyecto.flotavehicular_webapp.services.ICarIncidentsService;
+import com.proyecto.flotavehicular_webapp.utils.DateRange;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
@@ -79,6 +80,23 @@ public class CarIncidentsController {
         int effectivePageSize = (pageSize != null) ? pageSize : defaultPageSize;
 
         PageResponse<CarIncidentsDTO> carIncidentsDTOPageResponse = carIncidentsService.getByCarId(carId, pageNumber, effectivePageSize);
+
+        if (carIncidentsDTOPageResponse.items().isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(carIncidentsDTOPageResponse);
+    }
+
+    @PostMapping("/date")
+    public ResponseEntity<PageResponse<CarIncidentsDTO>> getKilometersByDate(
+            @RequestBody @Valid DateRange dateRange,
+            @RequestParam(defaultValue = "0") int pageNumber,
+            @RequestParam(required = false) Integer pageSize) {
+
+        int effectivePageSize = (pageSize != null) ? pageSize : defaultPageSize;
+
+        PageResponse<CarIncidentsDTO> carIncidentsDTOPageResponse = carIncidentsService.getByDate(dateRange.getStartDate(), dateRange.getEndDate(), pageNumber, effectivePageSize);
 
         if (carIncidentsDTOPageResponse.items().isEmpty()) {
             return ResponseEntity.noContent().build();

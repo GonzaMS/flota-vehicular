@@ -1,19 +1,17 @@
 package com.proyecto.flotavehicular_webapp.services.Impl;
 
 import com.proyecto.flotavehicular_webapp.dto.CarDTO;
-import com.proyecto.flotavehicular_webapp.services.Redis.RedisServiceImpl;
-import com.proyecto.flotavehicular_webapp.utils.EnumUtils;
-import com.proyecto.flotavehicular_webapp.utils.PageResponse;
 import com.proyecto.flotavehicular_webapp.enums.ESTATES;
 import com.proyecto.flotavehicular_webapp.exceptions.NotFoundException;
 import com.proyecto.flotavehicular_webapp.models.Car;
 import com.proyecto.flotavehicular_webapp.repositories.ICarRepository;
 import com.proyecto.flotavehicular_webapp.services.ICarService;
+import com.proyecto.flotavehicular_webapp.services.Redis.RedisServiceImpl;
+import com.proyecto.flotavehicular_webapp.utils.EnumUtils;
+import com.proyecto.flotavehicular_webapp.utils.PageResponse;
 import com.proyecto.flotavehicular_webapp.utils.RedisUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.service.spi.ServiceException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;

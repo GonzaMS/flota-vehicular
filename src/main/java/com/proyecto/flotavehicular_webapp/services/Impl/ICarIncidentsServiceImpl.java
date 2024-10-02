@@ -22,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -161,13 +162,35 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
         }
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_carIncidents_', #startDate, #endDate)")
+    public PageResponse<CarIncidentsDTO> getByDate(Date startDate, Date endDate, int pageNumber, int pageSize) {
+        try {
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+
+            Page<CarIncidents> carIncidentsPage = carIncidentsRepository.findByCreatedAtBetween(startDate, endDate, pageable);
+
+            if (carIncidentsPage.isEmpty()) {
+                throw new NotFoundException(NOTFOUND + " between " + startDate + " and " + endDate);
+            }
+
+            return mapToPageResponse(carIncidentsPage);
+        } catch (NotFoundException e) {
+            log.error("Incidents not found between {} and {}", startDate, endDate);
+            throw e;
+        } catch (Exception e) {
+            log.error("Error getting incidents by created at: {}", e.getMessage());
+            throw new ServiceException("Error getting incidents by created at");
+        }
+    }
+
     // Mappers
-    // Map Entity to DTO
+// Map Entity to DTO
     private CarIncidentsDTO mapToDTO(CarIncidents carIncidents) {
         return CarIncidentsDTO.builder()
                 .id(carIncidents.getId())
                 .createdAt(carIncidents.getCreatedAt())
-                .updatedAt(carIncidents.getUpdatedAt())
                 .description(carIncidents.getDescription())
                 .type(carIncidents.getType())
                 .build();
@@ -178,7 +201,6 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
         return CarIncidents.builder()
                 .id(carIncidentsDTO.getId())
                 .createdAt(carIncidentsDTO.getCreatedAt())
-                .updatedAt(carIncidentsDTO.getUpdatedAt())
                 .description(carIncidentsDTO.getDescription())
                 .type(carIncidentsDTO.getType())
                 .build();

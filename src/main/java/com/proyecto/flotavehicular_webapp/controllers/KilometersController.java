@@ -4,6 +4,7 @@ package com.proyecto.flotavehicular_webapp.controllers;
 import com.proyecto.flotavehicular_webapp.dto.KilometersDTO;
 import com.proyecto.flotavehicular_webapp.models.Kilometers;
 import com.proyecto.flotavehicular_webapp.services.IKilometersService;
+import com.proyecto.flotavehicular_webapp.utils.DateRange;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
@@ -52,9 +53,7 @@ public class KilometersController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<KilometersDTO> updateKilometers(
-            @PathVariable Long id,
-            @RequestBody KilometersDTO kilometersDTO) {
+    public ResponseEntity<KilometersDTO> updateKilometers(@PathVariable Long id, @RequestBody KilometersDTO kilometersDTO) {
 
         kilometersService.update(id, kilometersDTO);
 
@@ -79,6 +78,23 @@ public class KilometersController {
         int effectivePageSize = (pageSize != null) ? pageSize : defaultPageSize;
 
         PageResponse<KilometersDTO> kilometersPageResponse = kilometersService.getByCarId(carId, pageNumber, effectivePageSize);
+
+        if (kilometersPageResponse.items().isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(kilometersPageResponse);
+    }
+
+    @PostMapping("/date")
+    public ResponseEntity<PageResponse<KilometersDTO>> getKilometersByDate(
+            @RequestBody @Valid DateRange dateRange,
+            @RequestParam(defaultValue = "0") int pageNumber,
+            @RequestParam(required = false) Integer pageSize) {
+
+        int effectivePageSize = (pageSize != null) ? pageSize : defaultPageSize;
+
+        PageResponse<KilometersDTO> kilometersPageResponse = kilometersService.getByDate(dateRange.getStartDate(), dateRange.getEndDate(), pageNumber, effectivePageSize);
 
         if (kilometersPageResponse.items().isEmpty()) {
             return ResponseEntity.noContent().build();

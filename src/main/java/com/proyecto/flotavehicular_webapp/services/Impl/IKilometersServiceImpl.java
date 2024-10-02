@@ -22,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -134,7 +135,7 @@ public class IKilometersServiceImpl implements IKilometersService {
     // Filters
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(cacheManager = "cacheManagerWithoutTtl", value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_kilometers_car_', #id)")
+    @Cacheable(cacheManager = "cacheManagerWithoutTtl", value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_kilometers_', #id)")
     public PageResponse<KilometersDTO> getByCarId(Long id, int pageNumber, int pageSize) {
         try {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
@@ -155,13 +156,35 @@ public class IKilometersServiceImpl implements IKilometersService {
         }
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    @Cacheable(value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_kilometers_', #startDate, #endDate)")
+    public PageResponse<KilometersDTO> getByDate(Date startDate, Date endDate, int pageNumber, int pageSize) {
+        try {
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+            Page<Kilometers> kilometersPage = kilometersRepository.findByCreatedAtBetween(startDate, endDate, pageable);
+
+            if (kilometersPage.isEmpty()) {
+                throw new NotFoundException(KILOMETERS_NOT_FOUND + " between dates: " + startDate + " and " + endDate);
+            }
+
+            return mapToPageResponse(kilometersPage);
+        } catch (NotFoundException e) {
+            log.error("Kilometers not found between dates: {} and {}", startDate, endDate);
+            throw e;
+        } catch (Exception e) {
+            log.error("Error getting kilometers by date: {}", e.getMessage());
+            throw new ServiceException("Error getting kilometers by date");
+        }
+    }
+
+
     // Mappers
     // Map Entity to DTO
     private KilometersDTO mapToDTO(Kilometers kilometers) {
         return KilometersDTO.builder()
                 .id(kilometers.getId())
                 .createdAt(kilometers.getCreatedAt())
-                .updatedAt(kilometers.getUpdatedAt())
                 .actualKm(kilometers.getActualKm())
                 .carId(kilometers.getCar().getId())
                 .build();
@@ -172,7 +195,6 @@ public class IKilometersServiceImpl implements IKilometersService {
         return Kilometers.builder()
                 .id(kilometersDTO.getId())
                 .createdAt(kilometersDTO.getCreatedAt())
-                .updatedAt(kilometersDTO.getUpdatedAt())
                 .actualKm(kilometersDTO.getActualKm())
                 .build();
     }
