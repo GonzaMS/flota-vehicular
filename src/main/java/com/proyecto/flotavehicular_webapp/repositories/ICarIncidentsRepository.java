@@ -13,4 +13,6 @@ public interface ICarIncidentsRepository extends JpaRepository<CarIncidents, Lon
     Page<CarIncidents> findByCarId(Long carId, Pageable pageable);
 
     Page<CarIncidents> findByCreatedAtBetween(Date startDate, Date endDate, Pageable pageable);
+
+    Page<CarIncidents> findByCarIdAndCreatedAtBetween(Long carId, Date startDate, Date endDate, Pageable pageable);
 }
