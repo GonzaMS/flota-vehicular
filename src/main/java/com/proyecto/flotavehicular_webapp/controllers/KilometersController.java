@@ -102,4 +102,22 @@ public class KilometersController {
 
         return ResponseEntity.ok(kilometersPageResponse);
     }
+
+    @GetMapping("/car/{carId}/date")
+    public ResponseEntity<PageResponse<KilometersDTO>> getKilometersByCarIdAndDate(
+            @PathVariable Long carId,
+            @RequestBody @Valid DateRange dateRange,
+            @RequestParam(defaultValue = "0") int pageNumber,
+            @RequestParam(required = false) Integer pageSize) {
+
+        int effectivePageSize = (pageSize != null) ? pageSize : defaultPageSize;
+
+        PageResponse<KilometersDTO> kilometersPageResponse = kilometersService.getByCarIdAndDate(carId, dateRange.getStartDate(), dateRange.getEndDate(), pageNumber, effectivePageSize);
+
+        if (kilometersPageResponse.items().isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
+        return ResponseEntity.ok(kilometersPageResponse);
+    }
 }

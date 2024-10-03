@@ -178,6 +178,27 @@ public class IKilometersServiceImpl implements IKilometersService {
         }
     }
 
+    @Override
+    public PageResponse<KilometersDTO> getByCarIdAndDate(Long carId, Date startDate, Date endDate, int pageNumber, int pageSize) {
+        try {
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+
+            Page<Kilometers> kilometersPage = kilometersRepository.findByCarIdAndCreatedAtBetween(carId, startDate, endDate, pageable);
+
+            if (kilometersPage.isEmpty()) {
+                throw new NotFoundException(KILOMETERS_NOT_FOUND + " for car with id: " + carId + " between dates: " + startDate + " and " + endDate);
+            }
+
+            return mapToPageResponse(kilometersPage);
+        } catch (NotFoundException e) {
+            log.error("Kilometers not found for car with id: {} between dates: {} and {}", carId, startDate, endDate);
+            throw e;
+        } catch (Exception e) {
+            log.error("Error getting kilometers by carId and date: {}", e.getMessage());
+            throw new ServiceException("Error getting kilometers by carId and date");
+        }
+    }
+
 
     // Mappers
     // Map Entity to DTO

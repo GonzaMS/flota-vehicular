@@ -21,4 +21,6 @@ public interface IKilometersService {
     PageResponse<KilometersDTO> getByCarId(Long carId, int pageNumber, int pageSize);
 
     PageResponse<KilometersDTO> getByDate(Date startDate, Date endDate, int pageNumber, int pageSize);
+
+    PageResponse<KilometersDTO> getByCarIdAndDate(Long carId, Date startDate, Date endDate, int pageNumber, int pageSize);
 }
