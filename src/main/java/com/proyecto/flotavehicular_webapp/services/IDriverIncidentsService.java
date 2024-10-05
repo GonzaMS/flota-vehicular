@@ -11,7 +11,7 @@ public interface IDriverIncidentsService {
 
     DriverIncidents saveIncidentRecord(DriverIncidentsDTO driverIncidentsDTO);
 
-    void updateIncidentRecord(Long id, DriverIncidentsDTO driverIncidentsDTO);
+    DriverIncidentsDTO updateIncidentRecord(Long id, DriverIncidentsDTO driverIncidentsDTO);
 
     void deleteIncidentRecord(Long id);
 

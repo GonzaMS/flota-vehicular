@@ -11,5 +11,5 @@ public interface IDrivingHistoryRepository extends JpaRepository<DrivingHistory,
 
     Page<DrivingHistory> findByDriverDriverId(Long driverId, Pageable pageable);
 
-    Page<DrivingHistory> findByCarCarId(Long carId, Pageable pageable);
+    Page<DrivingHistory> findByCar_Id(Long carId, Pageable pageable);
 }

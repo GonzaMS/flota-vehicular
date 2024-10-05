@@ -1,55 +1,69 @@
 package com.proyecto.flotavehicular_webapp.services.Impl;
 
-import com.proyecto.flotavehicular_webapp.dto.CarDTO;
 import com.proyecto.flotavehicular_webapp.dto.DriverDTO;
-import com.proyecto.flotavehicular_webapp.dto.DriverIncidentsDTO;
-import com.proyecto.flotavehicular_webapp.dto.DrivingHistoryDTO;
-import com.proyecto.flotavehicular_webapp.dto.PerformanceEvaluationDTO;
+import com.proyecto.flotavehicular_webapp.services.Redis.RedisServiceImpl;
 import com.proyecto.flotavehicular_webapp.enums.ESTATES;
 import com.proyecto.flotavehicular_webapp.exceptions.NotFoundException;
-import com.proyecto.flotavehicular_webapp.models.Car;
 import com.proyecto.flotavehicular_webapp.models.Driver;
-import com.proyecto.flotavehicular_webapp.models.DriverIncidents;
-import com.proyecto.flotavehicular_webapp.models.DrivingHistory;
-import com.proyecto.flotavehicular_webapp.models.PerformanceEvaluation;
 import com.proyecto.flotavehicular_webapp.repositories.IDriverRepository;
 import com.proyecto.flotavehicular_webapp.services.IDriverService;
 import com.proyecto.flotavehicular_webapp.utils.EnumUtils;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
+import org.hibernate.service.spi.ServiceException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.proyecto.flotavehicular_webapp.utils.RedisUtils;
 
-import java.util.Collections;
+
+
 import java.util.List;
 
 @Service
 public class IDriverServiceImpl implements IDriverService {
 
     private final IDriverRepository driverRepository;
+    private final CacheManager cacheManager;
+    private final RedisServiceImpl redisServiceImpl;
 
     private static final String NOTFOUND = "Driver not found";
 
     private static final Logger logger = LoggerFactory.getLogger(IDriverServiceImpl.class);
 
 
-    public IDriverServiceImpl(IDriverRepository driverRepository) {
+    public IDriverServiceImpl(IDriverRepository driverRepository, CacheManager cacheManager, RedisServiceImpl redisServiceImpl) {
         this.driverRepository = driverRepository;
+        this.cacheManager = cacheManager;
+        this.redisServiceImpl = redisServiceImpl;
     }
 
     @Override
     @Transactional(readOnly = true)
     public PageResponse<DriverDTO> getAllDrivers(int pageNumber, int pageSize) {
-
         try {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
             Page<Driver> driverPage = driverRepository.findAll(pageable);
 
-            return mapToPageResponse(driverPage,false);
+            driverPage.forEach(driver -> {
+                String key = RedisUtils.CacheKeyGenerator("sd::api_driver_", driver.getDriverId());
+
+                Object driverOnCache = cacheManager.getCache("sd").get(key);
+
+                if (driverOnCache == null){
+                    DriverDTO driverDTO = mapToDTO(driver);
+                    redisServiceImpl.save(key, driverDTO);
+                }
+            });
+
+            return mapToPageResponse(driverPage);
         }catch (Exception e) {
                 logger.error("Error getting all cars: {}", e.getMessage());
                 throw new NotFoundException("Error getting all cars");
@@ -58,24 +72,30 @@ public class IDriverServiceImpl implements IDriverService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "sd", cacheManager = "cacheManagerWithoutTtl", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_driver_', #id)")
     public DriverDTO getDriverById(Long id) {
-        Driver driver = driverRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException(NOTFOUND));
+        Driver driver = driverRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
         return mapToDTO(driver);
     }
 
     @Override
     @Transactional
     public Driver saveDriver(DriverDTO driverDTO) {
-        Driver driver = mapToEntity(driverDTO);
-        return driverRepository.save(driver);
+        try {
+            Driver driver = mapToEntity(driverDTO);
+            return driverRepository.save(driver);
+        } catch (Exception e) {
+            logger.error("Error saving driver: {}", e.getMessage());
+            throw new ServiceException("Error saving car");
+        }
     }
 
     @Override
     @Transactional
-    public void updateDriver(Long id, DriverDTO driverDTO) {
-        Driver driver = driverRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Driver not found"));
+    @CachePut(value = "sd", cacheManager = "cacheManagerWithoutTtl", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_driver_', #id)", unless = "#result == null")
+    public DriverDTO updateDriver(Long id, DriverDTO driverDTO) {
+        try{
+        Driver driver = driverRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
 
         driver.setDriverName(driverDTO.getDriverName());
         driver.setDriverLicense(driverDTO.getDriverLicense());
@@ -83,60 +103,108 @@ public class IDriverServiceImpl implements IDriverService {
         driver.setDriverState(driverDTO.getDriverState());
 
         driverRepository.save(driver);
+
+        return mapToDTO(driver);
+
+    } catch (NotFoundException e) {
+        logger.error("driver with id {} not found", id);
+        throw e;
+    }catch (Exception e) {
+            logger.error("Error updating driver: {}", e.getMessage());
+        throw new ServiceException("Error updating driver");
+        }
     }
-
-
 
     @Override
     @Transactional
+    @CacheEvict(value = "sd", cacheManager = "cacheManagerWithoutTtl", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_driver_', #id)")
     public void deleteDriver(Long id) {
-        Driver driver = driverRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException(NOTFOUND));
-        driverRepository.delete(driver);
+        try {
+            Driver driver = driverRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
+            driverRepository.delete(driver);
+        }catch (NotFoundException e) {
+                logger.error("Car with id {} not found", id);
+                throw e;
+        } catch (Exception e) {
+            logger.error("Error deleting car: {}", e.getMessage());
+            throw new RuntimeException(e);
+        }
     }
 
     // Filters
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_driver_', #name)")
     public PageResponse<DriverDTO> getDriverByName(String name, int pageNumber, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
-        Page<Driver> driverPage = driverRepository.findByDriverName(name, pageable);
+        try {
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+            Page<Driver> driverPage = driverRepository.findByDriverName(name, pageable);
 
-        if (driverPage.isEmpty()) {
-            throw new NotFoundException("Name not found: " + name);
+            if (driverPage.isEmpty()) {
+                throw new NotFoundException("Name not found: " + name);
+            }
+
+            return mapToPageResponse(driverPage);
+
+        }catch (NotFoundException e) {
+            logger.error("driver with name {} not found", name);
+            throw e;
+
+        } catch (Exception e) {
+            logger.error("Error getting driver by name: {}", e.getMessage());
+            throw new ServiceException("Error getting driver by name");
         }
-
-        return mapToPageResponse(driverPage,false);
     }
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_driver_', #license)")
     public PageResponse<DriverDTO> getDriverByLicense(String license, int pageNumber, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
-        Page<Driver> driverPage = driverRepository.findByDriverLicense(license, pageable);
+        try {
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+            Page<Driver> driverPage = driverRepository.findByDriverLicense(license, pageable);
 
-        if (driverPage.isEmpty()) {
-            throw new NotFoundException("License not found: " + license);
+            if (driverPage.isEmpty()) {
+                throw new NotFoundException("License not found: " + license);
+            }
+
+            return mapToPageResponse(driverPage);
+        } catch (NotFoundException e) {
+            logger.error("driver with license {} not found", license);
+            throw e;
+
+        } catch (Exception e) {
+            logger.error("Error getting driver by name: {}", e.getMessage());
+            throw new ServiceException("Error getting driver by license");
         }
 
-        return mapToPageResponse(driverPage,false);
     }
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_driver_', #state)")
     public PageResponse<DriverDTO> getDriverByState(String state, int pageNumber, int pageSize) {
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
-        if(!EnumUtils.isValidState(state)) {
-            throw new NotFoundException("State not found: " + state);
-        }
-        ESTATES driverState = ESTATES.valueOf(state);
-        Page<Driver> driverPage = driverRepository.findByDriverState(driverState, pageable);
+        try {
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+            if(!EnumUtils.isValidState(state)) {
+                throw new NotFoundException("State not found: " + state);
+            }
+            ESTATES driverState = ESTATES.valueOf(state);
+            Page<Driver> driverPage = driverRepository.findByDriverState(driverState, pageable);
 
-        if (driverPage.isEmpty()) {
-            throw new NotFoundException("State not found: " + state);
-        }
+            if (driverPage.isEmpty()) {
+                throw new NotFoundException("State not found: " + state);
+            }
 
-         return mapToPageResponse(driverPage,false);
+            return mapToPageResponse(driverPage);
+        } catch (NotFoundException e) {
+            logger.error("driver with state {} not found", state);
+            throw e;
+
+        } catch (Exception e) {
+            logger.error("Error getting driver by state: {}", e.getMessage());
+            throw new ServiceException("Error getting driver by state");
+        }
     }
 
     // Mappers
@@ -147,107 +215,24 @@ public class IDriverServiceImpl implements IDriverService {
                 .driverLicense(driverDTO.getDriverLicense())
                 .driverState(driverDTO.getDriverState())
                 .driverLicenseExpirationDate(driverDTO.getDriverLicenseExpirationDate())
-                .drivingHistories(driverDTO.getDrivingHistories() != null ?
-                        driverDTO.getDrivingHistories().stream()
-                                .map(this::mapToDriverHistoryDTO)
-                                .toList()
-                        : Collections.emptyList())
-                .driverIncidents(driverDTO.getDriverIncidents() != null ?
-                        driverDTO.getDriverIncidents().stream()
-                                .map(this::mapToDriverIncidentsDTO).
-                                toList()
-                        : Collections.emptyList())
-                .evaluations(driverDTO.getEvaluations() != null ?
-                        driverDTO.getEvaluations().stream()
-                                .map(this::mapToPerformanceDTO)
-                                .toList()
-                        : Collections.emptyList())
                 .build();
     }
 
-    // Mapping DriverEvaluation to DTO
-    private DrivingHistory mapToDriverHistoryDTO(DrivingHistoryDTO drivingHistoryDTO) {
-        return DrivingHistory.builder()
-                .drivingHistoryId(drivingHistoryDTO.getDrivingHistoryId())
-                .driver(Driver.builder().driverId(drivingHistoryDTO.getDriverId()).build())
-                .drivingDate(drivingHistoryDTO.getDrivingDate())
-                .kmDriven(drivingHistoryDTO.getKmDriven())
-                .build();
-    }
-
-    // Mapping DriverIncidents to DTO
-    private DriverIncidents mapToDriverIncidentsDTO(DriverIncidentsDTO driverIncidentsDTO) {
-        return DriverIncidents.builder()
-                .incidentId(driverIncidentsDTO.getIncidentId())
-                .driver(Driver.builder().driverId(driverIncidentsDTO.getDriverId()).build())
-                .incidentDate(driverIncidentsDTO.getIncidentDate())
-                .incidentDescription(driverIncidentsDTO.getIncidentDescription())
-                .incidentType(driverIncidentsDTO.getIncidentType())
-                .build();
-    }
-
-    // Mapping Performance to DTO
-    private PerformanceEvaluation mapToPerformanceDTO(PerformanceEvaluationDTO performanceEvaluationDTO){
-        return PerformanceEvaluation.builder()
-                .performanceId(performanceEvaluationDTO.getPerformanceId())
-                .driver(Driver.builder().driverId(performanceEvaluationDTO.getDriverId()).build())
-                .performanceDate(performanceEvaluationDTO.getPerformanceDate())
-                .performancePoints(performanceEvaluationDTO.getPerformancePoints())
-                .build();
-    }
-
-    // Mapping the Car object to DTO
-    private DriverDTO mapToDTO(Driver driver, boolean includeRelations) {
+    // Mapping the Driver object to DTO
+    private DriverDTO mapToDTO(Driver driver) {
         DriverDTO.DriverDTOBuilder builder = DriverDTO.builder()
                 .driverId(driver.getDriverId())
                 .driverLicense(driver.getDriverLicense())
                 .driverName(driver.getDriverName())
                 .driverState(driver.getDriverState())
                 .driverLicenseExpirationDate(driver.getDriverLicenseExpirationDate());
-
-        if (includeRelations) {
-            builder.drivingHistories(driver.getDrivingHistories() != null ?
-                            driver.getDrivingHistories().stream().map(this::mapToMaintenanceEntity).toList() : Collections.emptyList())
-                    .driverIncidents(driver.getDriverIncidents() != null ?
-                            driver.getDriverIncidents().stream().map(this::mapDriverIncidentsEntity).toList() : Collections.emptyList())
-                    .evaluations(driver.getEvaluations() != null ?
-                            driver.getEvaluations().stream().map(this::mapToPerformanceEntity).toList() : Collections.emptyList());
-        }
         return builder.build();
     }
 
-    // Mapping DrivingHistory dto to Entity
-    private DrivingHistoryDTO mapToMaintenanceEntity(DrivingHistory drivingHistory) {
-        return DrivingHistoryDTO.builder()
-                .drivingHistoryId(drivingHistory.getDrivingHistoryId())
-                .drivingDate(drivingHistory.getDrivingDate())
-                .kmDriven(drivingHistory.getKmDriven())
-                .build();
-    }
-
-    // Mapping CarDTO dto to Entity
-    private DriverIncidentsDTO  mapDriverIncidentsEntity(DriverIncidents driverIncidents) {
-        return DriverIncidentsDTO.builder()
-                .incidentId(driverIncidents.getIncidentId())
-                .incidentDescription(driverIncidents.getIncidentDescription())
-                .incidentDate(driverIncidents.getIncidentDate())
-                .incidentType(driverIncidents.getIncidentType())
-                .build();
-    }
-
-    // Mapping PerformanceEvaluation dto to Entity
-    private PerformanceEvaluationDTO mapToPerformanceEntity(PerformanceEvaluation performanceEvaluation) {
-        return PerformanceEvaluationDTO.builder()
-                .performanceId(performanceEvaluation.getPerformanceId())
-                .performanceDate(performanceEvaluation.getPerformanceDate())
-                .performancePoints(performanceEvaluation.getPerformancePoints())
-                .build();
-    }
-
     // Page Response
-    private PageResponse<DriverDTO> mapToPageResponse(Page<Driver> carPage, Boolean includeRelations) {
+    private PageResponse<DriverDTO> mapToPageResponse(Page<Driver> carPage ) {
         List<DriverDTO> driverDTOList = carPage.stream()
-                .map(driver -> mapToDTO(driver, includeRelations))
+                .map(this::mapToDTO)
                 .toList();
 
         return PageResponse.of(

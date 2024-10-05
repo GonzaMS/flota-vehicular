@@ -10,7 +10,7 @@ public interface IDrivingHistoryService {
 
     DrivingHistory saveDrivingHistory(DrivingHistoryDTO drivingHistoryDTO);
 
-    void updateDrivingHistory(Long id, DrivingHistoryDTO drivingHistoryDTO);
+    DrivingHistoryDTO updateDrivingHistory(Long id, DrivingHistoryDTO drivingHistoryDTO);
 
     void deleteDrivingHistory(Long id);
 

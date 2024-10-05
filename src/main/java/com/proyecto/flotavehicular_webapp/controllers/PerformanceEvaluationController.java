@@ -4,13 +4,13 @@ import com.proyecto.flotavehicular_webapp.dto.PerformanceEvaluationDTO;
 import com.proyecto.flotavehicular_webapp.models.PerformanceEvaluation;
 import com.proyecto.flotavehicular_webapp.services.IPerformanceEvaluationService;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
-import org.springframework.format.annotation.DateTimeFormat;
+import com.proyecto.flotavehicular_webapp.utils.DateRange;
+import io.lettuce.core.dynamic.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
-import java.util.Date;
 
 @RestController
 @RequestMapping("/api/v1/performance-evaluations")
@@ -60,14 +60,23 @@ public class PerformanceEvaluationController {
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/by-date")
+    @PostMapping("/by-date")
     public ResponseEntity<PageResponse<PerformanceEvaluationDTO>> findByPerformanceDate(
-            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date performanceDate,
-            @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "10") int size) {
-        PageResponse<PerformanceEvaluationDTO> response = performanceEvaluationService.findByPerformanceDate(performanceDate, page, size);
+            @RequestBody @Valid DateRange dateRange,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(required = false) Integer pageSize) {
+
+        int effectivePageSize = (pageSize != null) ? pageSize : 10;
+
+        PageResponse<PerformanceEvaluationDTO> response = performanceEvaluationService.findByCreatedAtBetween(dateRange.getStartDate(), dateRange.getEndDate(), page, effectivePageSize);
+
+        if (response.items().isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+
         return ResponseEntity.ok(response);
     }
+
 
     @GetMapping("/by-driver")
     public ResponseEntity<PageResponse<PerformanceEvaluationDTO>> getPerformanceByDriverName(

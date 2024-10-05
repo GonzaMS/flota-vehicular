@@ -6,13 +6,14 @@ import com.proyecto.flotavehicular_webapp.utils.PageResponse;
 
 import java.util.Date;
 
+
 public interface IPerformanceEvaluationService {
 
     PerformanceEvaluationDTO getEvaluationById(Long id);
 
     PerformanceEvaluation saveEvaluation(PerformanceEvaluationDTO performanceEvaluationDTO);
 
-    void updateEvaluation(Long id, PerformanceEvaluationDTO performanceEvaluationDTO);
+    PerformanceEvaluationDTO updateEvaluation(Long id, PerformanceEvaluationDTO performanceEvaluationDTO);
 
     void deleteEvaluation(Long id);
 
@@ -20,5 +21,6 @@ public interface IPerformanceEvaluationService {
 
     PageResponse<PerformanceEvaluationDTO> getPerformanceByDriverName(String name, int pageNumber, int pageSize);
 
-    PageResponse<PerformanceEvaluationDTO> findByPerformanceDate(Date performanceDate, int pageNumber, int pageSize);
+    PageResponse<PerformanceEvaluationDTO> findByCreatedAtBetween(Date starDate, Date endDate, int pageNumber, int pageSize);
+
 }

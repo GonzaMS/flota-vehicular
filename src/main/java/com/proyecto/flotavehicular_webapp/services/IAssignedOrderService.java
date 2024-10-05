@@ -10,7 +10,7 @@ public interface IAssignedOrderService {
 
     AssignedOrder saveAssignedOrder(AssignedOrderDTO assignedOrderDTO);
 
-    void updateAssignedOrder(Long id, AssignedOrderDTO assignedOrderDTO);
+    AssignedOrderDTO updateAssignedOrder(Long id, AssignedOrderDTO assignedOrderDTO);
 
     void deleteAssignedOrder(Long id);
 

@@ -10,7 +10,7 @@ public interface IDriverService {
 
     Driver saveDriver(DriverDTO driverDTO);
 
-    void updateDriver(Long id, DriverDTO driverDTO);
+    DriverDTO updateDriver(Long id, DriverDTO driverDTO);
 
     void deleteDriver(Long id);
 

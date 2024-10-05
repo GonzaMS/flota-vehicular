@@ -13,5 +13,5 @@ public interface IPerformanceEvaluationRepository extends JpaRepository<Performa
 
     Page<PerformanceEvaluation> findByDriver_DriverName(String driverName, Pageable pageable);
 
-    Page<PerformanceEvaluation> findByPerformanceDate(Date performanceDate, Pageable pageable);
+    Page<PerformanceEvaluation> findByCreatedAtBetween(Date startDate, Date endDate, Pageable pageable);
 }

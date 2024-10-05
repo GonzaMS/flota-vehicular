@@ -36,6 +36,11 @@ public class DriverController {
     @GetMapping("/{id}")
     public ResponseEntity<DriverDTO> getDriverById(@PathVariable Long id) {
         DriverDTO driver = driverService.getDriverById(id);
+
+        if (driver ==null){
+            return ResponseEntity.notFound().build();
+        }
+
         return ResponseEntity.ok(driver);
     }
 
@@ -50,10 +55,14 @@ public class DriverController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<DriverDTO> updateDriver(@PathVariable Long id, @Valid @RequestBody DriverDTO driverDTO) {
+    public ResponseEntity<DriverDTO> updateDriver(
+            @PathVariable Long id,
+            @Valid @RequestBody DriverDTO driverDTO) {
+
         driverService.updateDriver(id, driverDTO);
+
         DriverDTO driver = driverService.getDriverById(id);
-        return ResponseEntity.ok(driver);
+        return ResponseEntity.ok().body(driver);
     }
 
     @DeleteMapping("/{id}")
