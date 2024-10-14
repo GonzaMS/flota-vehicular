@@ -1,9 +1,9 @@
 package com.proyecto.flotavehicular_webapp.services.Impl;
 
-import com.proyecto.flotavehicular_webapp.dto.CarIncidentsDTO;
+import com.proyecto.flotavehicular_webapp.dto.car.CarIncidentsDTO;
 import com.proyecto.flotavehicular_webapp.exceptions.NotFoundException;
-import com.proyecto.flotavehicular_webapp.models.Car;
-import com.proyecto.flotavehicular_webapp.models.CarIncidents;
+import com.proyecto.flotavehicular_webapp.models.Car.Car;
+import com.proyecto.flotavehicular_webapp.models.Car.CarIncidents;
 import com.proyecto.flotavehicular_webapp.repositories.ICarIncidentsRepository;
 import com.proyecto.flotavehicular_webapp.repositories.ICarRepository;
 import com.proyecto.flotavehicular_webapp.services.ICarIncidentsService;
@@ -20,8 +20,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 
@@ -42,7 +44,7 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
     public PageResponse<CarIncidentsDTO> getAll(int pageNumber, int pageSize) {
         try {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
@@ -68,7 +70,7 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     @Cacheable(value = "carIncidents", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('carIncidents', #id)")
     public CarIncidentsDTO getById(Long id) {
         CarIncidents carIncidents = carIncidentsRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
@@ -76,26 +78,27 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class, timeout = 10)
     public CarIncidents save(CarIncidentsDTO carIncidentsDTO) {
         try {
             Car car = carRepository.findById(carIncidentsDTO.getCarId()).orElseThrow(() -> new NotFoundException("Car not found"));
 
             CarIncidents carIncidents = mapToEntity(carIncidentsDTO);
             carIncidents.setCar(car);
+            carIncidents.setCreatedAt(new Date());
 
             return carIncidentsRepository.save(carIncidents);
         } catch (NotFoundException e) {
-            log.error("Car with id {} not found", carIncidentsDTO.getCarId());
+            log.error("Rollback triggered - Parameters: carIncidentsDTO={}, carId={}", carIncidentsDTO, carIncidentsDTO.getCarId());
             throw e;
         } catch (Exception e) {
-            log.error("Error saving incident: {}", e.getMessage());
+            log.error("Rollback triggered - Error saving incident: {}, Parameters: carIncidentsDTO={}", e.getMessage(), carIncidentsDTO);
             throw new ServiceException("Error saving incident");
         }
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class, timeout = 10)
     @CachePut(value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_carIncidents_', #id)")
     public CarIncidentsDTO update(Long id, CarIncidentsDTO carIncidentsDTO) {
         try {
@@ -103,21 +106,22 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
 
             carIncidents.setDescription(carIncidentsDTO.getDescription());
             carIncidents.setType(carIncidentsDTO.getType());
+            carIncidents.setUpdatedAt(new Date());
 
             carIncidentsRepository.save(carIncidents);
 
             return mapToDTO(carIncidents);
         } catch (NotFoundException e) {
-            log.error("Incident with id {} not found", id);
+            log.error("Rollback triggered - Parameters: id={}, carIncidentsDTO={}", id, carIncidentsDTO);
             throw e;
         } catch (Exception e) {
-            log.error("Error updating incident: {}", e.getMessage());
+            log.error("Rollback triggered - Error updating incident: {}, Parameters: id={}, carIncidentsDTO={}", e.getMessage(), id, carIncidentsDTO);
             throw new ServiceException("Error updating incident");
         }
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.NOT_SUPPORTED, rollbackFor = Exception.class, timeout = 10)
     @CacheEvict(value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_carIncidents_', #id)")
     public void delete(Long id) {
         try {
@@ -130,17 +134,17 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
             }
 
         } catch (NotFoundException e) {
-            log.error("Incident with id {} not found", id);
+            log.error("Rollback triggered - Parameters: id={}", id);
             throw e;
         } catch (Exception e) {
-            log.error("Error deleting incident: {}", e.getMessage());
+            log.error("Rollback triggered - Error deleting incident: {}, Parameters: id={}", e.getMessage(), id);
             throw new ServiceException("Error deleting incident");
         }
     }
 
     // Filters
     @Override
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS, timeout = 5)
     @Cacheable(value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_carIncidents_', #id)")
     public PageResponse<CarIncidentsDTO> getByCarId(Long id, int pageNumber, int pageSize) {
         try {
@@ -163,7 +167,7 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS, timeout = 5)
     @Cacheable(value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_carIncidents_', #startDate, #endDate)")
     public PageResponse<CarIncidentsDTO> getByDate(Date startDate, Date endDate, int pageNumber, int pageSize) {
         try {
@@ -191,6 +195,7 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
         return CarIncidentsDTO.builder()
                 .id(carIncidents.getId())
                 .createdAt(carIncidents.getCreatedAt())
+                .updatedAt(carIncidents.getUpdatedAt())
                 .description(carIncidents.getDescription())
                 .type(carIncidents.getType())
                 .build();
@@ -201,6 +206,7 @@ public class ICarIncidentsServiceImpl implements ICarIncidentsService {
         return CarIncidents.builder()
                 .id(carIncidentsDTO.getId())
                 .createdAt(carIncidentsDTO.getCreatedAt())
+                .updatedAt(carIncidentsDTO.getUpdatedAt())
                 .description(carIncidentsDTO.getDescription())
                 .type(carIncidentsDTO.getType())
                 .build();

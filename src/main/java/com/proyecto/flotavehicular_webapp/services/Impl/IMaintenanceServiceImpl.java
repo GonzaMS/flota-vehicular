@@ -1,9 +1,9 @@
 package com.proyecto.flotavehicular_webapp.services.Impl;
 
-import com.proyecto.flotavehicular_webapp.dto.MaintenanceHistoryDTO;
+import com.proyecto.flotavehicular_webapp.dto.car.MaintenanceHistoryDTO;
 import com.proyecto.flotavehicular_webapp.exceptions.NotFoundException;
-import com.proyecto.flotavehicular_webapp.models.Car;
-import com.proyecto.flotavehicular_webapp.models.MaintenanceHistory;
+import com.proyecto.flotavehicular_webapp.models.Car.Car;
+import com.proyecto.flotavehicular_webapp.models.Car.MaintenanceHistory;
 import com.proyecto.flotavehicular_webapp.repositories.ICarRepository;
 import com.proyecto.flotavehicular_webapp.repositories.IMaintenanceRepository;
 import com.proyecto.flotavehicular_webapp.services.IMaintenanceService;
@@ -20,8 +20,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 
@@ -42,7 +45,7 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
     public PageResponse<MaintenanceHistoryDTO> getAll(int pageNumber, int pageSize) {
         try {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
@@ -68,7 +71,7 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS)
     @Cacheable(cacheManager = "cacheManagerWithoutTtl", value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_maintenance_', #id)")
     public MaintenanceHistoryDTO getById(Long id) {
         MaintenanceHistory maintenanceHistory = maintenanceRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
@@ -76,27 +79,28 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class, timeout = 10)
     public MaintenanceHistory save(MaintenanceHistoryDTO maintenanceDTO) {
         try {
             Car car = carRepository.findById(maintenanceDTO.getCarId()).orElseThrow(() -> new NotFoundException("Car not found"));
 
             MaintenanceHistory maintenanceHistory = mapToEntity(maintenanceDTO);
             maintenanceHistory.setCar(car);
+            maintenanceHistory.setCreatedAt(new Date());
 
             return maintenanceRepository.save(maintenanceHistory);
 
         } catch (NotFoundException e) {
-            log.error("Car with id {} not found", maintenanceDTO.getCarId());
+            log.error("Rollback triggered - Parameters: maintenanceDTO={}, carId={}", maintenanceDTO, maintenanceDTO.getId());
             throw e;
         } catch (Exception e) {
-            log.error("Error saving maintenance: {}", e.getMessage());
+            log.error("Rollback triggered - Error saving Maintenance: {}, Parameters: maintenanceDTO={}, carId={}", e.getMessage(), maintenanceDTO, maintenanceDTO.getId());
             throw new ServiceException("Error saving maintenance");
         }
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class, timeout = 10)
     @CachePut(cacheManager = "cacheManagerWithoutTtl", value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_maintenance_', #id)")
     public MaintenanceHistoryDTO update(Long id, MaintenanceHistoryDTO maintenanceDTO) {
         try {
@@ -105,30 +109,41 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
             maintenanceHistory.setDescription(maintenanceDTO.getDescription());
             maintenanceHistory.setCost(maintenanceDTO.getCost());
             maintenanceHistory.setType(maintenanceDTO.getType());
+            maintenanceHistory.setUpdatedAt(new Date());
 
             maintenanceRepository.save(maintenanceHistory);
 
             return mapToDto(maintenanceHistory);
 
         } catch (NotFoundException e) {
-            log.error("Maintenance with id {} not found", id);
+            log.error("Rollback triggered - Parameters: id={}, maintenanceDTO={}", id, maintenanceDTO);
             throw e;
         } catch (Exception e) {
-            log.error("Error updating maintenance: {}", e.getMessage());
+            log.error("Rollback triggered - Error updating Maintenance: {}, Parameters: id={}, maintenanceDTO={}", e.getMessage(), id, maintenanceDTO);
             throw new ServiceException("Error updating maintenance");
         }
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.NOT_SUPPORTED, rollbackFor = Exception.class, timeout = 10)
     @CacheEvict(cacheManager = "cacheManagerWithoutTtl", value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_maintenance_', #id)")
     public void delete(Long id) {
-        MaintenanceHistory maintenanceHistory = maintenanceRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
-        maintenanceRepository.delete(maintenanceHistory);
+        try {
+            MaintenanceHistory maintenanceHistory = maintenanceRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
+            maintenanceRepository.delete(maintenanceHistory);
+        } catch (NotFoundException e) {
+            log.error("Rollback triggered - Parameters: id={}", id);
+            throw e;
+        } catch (Exception e) {
+            log.error("Rollback triggered - Error deleting Maintenance: {}, Parameters: id={}", e.getMessage(), id);
+            throw new ServiceException("Error deleting maintenance");
+        }
+
     }
 
+    //Filters
     @Override
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS, timeout = 5)
     @Cacheable(cacheManager = "cacheManagerWithoutTtl", value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_maintenance_car_', #id)")
     public PageResponse<MaintenanceHistoryDTO> getByCarId(Long id, int pageNumber, int pageSize) {
         try {

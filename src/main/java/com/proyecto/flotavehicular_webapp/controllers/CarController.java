@@ -1,7 +1,7 @@
 package com.proyecto.flotavehicular_webapp.controllers;
 
-import com.proyecto.flotavehicular_webapp.dto.*;
-import com.proyecto.flotavehicular_webapp.models.Car;
+import com.proyecto.flotavehicular_webapp.dto.car.*;
+import com.proyecto.flotavehicular_webapp.models.Car.Car;
 import com.proyecto.flotavehicular_webapp.services.ICarService;
 import com.proyecto.flotavehicular_webapp.services.Impl.IHeaderDetailsServiceImpl;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -74,12 +75,14 @@ public class CarController {
     }
 
     @PostMapping()
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Car> saveCar(@Valid @RequestBody CarDTO carDTO) {
         Car newCar = carService.save(carDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(newCar);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CarDTO> updateCar(
             @PathVariable Long id,
             @Valid @RequestBody CarDTO carDTO) {
@@ -118,15 +121,38 @@ public class CarController {
         return ResponseEntity.ok().build();
     }
 
+    @PutMapping("/{carId}/update-details")
+    public ResponseEntity<Void> updateCarAndDetails(
+            @PathVariable Long carId,
+            @RequestBody CarUpdateRequestDTO carUpdateRequest) {
+        headerDetailsService.updateCarAndDetails(
+                carId,
+                carUpdateRequest.getCarIncidentsDTOs(),
+                carUpdateRequest.getKilometersDTOs(),
+                carUpdateRequest.getMaintenanceHistoryDTOs()
+        );
+        return ResponseEntity.ok().build();
+    }
+
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Boolean> deleteCar(@PathVariable Long id) {
         carService.delete(id);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping("/deactivate/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CarDTO> deactivateCar(@PathVariable Long id) {
         carService.deactivate(id);
+        CarDTO updatedCar = carService.getById(id);
+        return ResponseEntity.ok(updatedCar);
+    }
+
+    @PutMapping("/activate/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<CarDTO> activateCar(@PathVariable Long id) {
+        carService.activate(id);
         CarDTO updatedCar = carService.getById(id);
         return ResponseEntity.ok(updatedCar);
     }

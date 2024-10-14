@@ -1,6 +1,6 @@
 package com.proyecto.flotavehicular_webapp.repositories;
 
-import com.proyecto.flotavehicular_webapp.models.Kilometers;
+import com.proyecto.flotavehicular_webapp.models.Car.Kilometers;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

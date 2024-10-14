@@ -1,8 +1,8 @@
 package com.proyecto.flotavehicular_webapp.services;
 
-import com.proyecto.flotavehicular_webapp.dto.CarDTO;
+import com.proyecto.flotavehicular_webapp.dto.car.CarDTO;
+import com.proyecto.flotavehicular_webapp.models.Car.Car;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
-import com.proyecto.flotavehicular_webapp.models.Car;
 
 
 public interface ICarService {
@@ -18,6 +18,8 @@ public interface ICarService {
     void delete(Long id);
 
     void deactivate(Long id);
+
+    void activate(Long id);
 
     // Filters
     PageResponse<CarDTO> getByState(String state, int pageNumber, int pageSize);

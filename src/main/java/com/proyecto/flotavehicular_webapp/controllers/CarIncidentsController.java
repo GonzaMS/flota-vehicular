@@ -1,7 +1,7 @@
 package com.proyecto.flotavehicular_webapp.controllers;
 
-import com.proyecto.flotavehicular_webapp.dto.CarIncidentsDTO;
-import com.proyecto.flotavehicular_webapp.models.CarIncidents;
+import com.proyecto.flotavehicular_webapp.dto.car.CarIncidentsDTO;
+import com.proyecto.flotavehicular_webapp.models.Car.CarIncidents;
 import com.proyecto.flotavehicular_webapp.services.ICarIncidentsService;
 import com.proyecto.flotavehicular_webapp.utils.DateRange;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -47,12 +48,14 @@ public class CarIncidentsController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CarIncidents> saveIncident(@Valid @RequestBody CarIncidentsDTO carIncidentsDTO) {
         CarIncidents newIncident = carIncidentsService.save(carIncidentsDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(newIncident);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CarIncidentsDTO> updateIncident(
             @PathVariable Long id,
             @Valid @RequestBody CarIncidentsDTO carIncidentsDTO) {
@@ -65,6 +68,7 @@ public class CarIncidentsController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Boolean> deleteMaintenance(@PathVariable Long id) {
         carIncidentsService.delete(id);
         return ResponseEntity.ok().build();

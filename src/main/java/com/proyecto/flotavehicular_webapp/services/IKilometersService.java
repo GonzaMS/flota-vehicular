@@ -1,7 +1,8 @@
 package com.proyecto.flotavehicular_webapp.services;
 
-import com.proyecto.flotavehicular_webapp.dto.KilometersDTO;
-import com.proyecto.flotavehicular_webapp.models.Kilometers;
+
+import com.proyecto.flotavehicular_webapp.dto.car.KilometersDTO;
+import com.proyecto.flotavehicular_webapp.models.Car.Kilometers;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
 
 import java.util.Date;

@@ -9,10 +9,8 @@ public record PageResponse<T>(List<T> items,
                               int totalPages,
                               boolean isLast) {
 
-    // Function to generate a new PageResponse
+    // Factory method to create a new PageResponse instance
     public static <T> PageResponse<T> of(List<T> items, Integer pageNumber, Integer pageSize, Long totalElements, int totalPages, boolean isLast) {
         return new PageResponse<>(items, pageNumber, pageSize, totalElements, totalPages, isLast);
     }
-
 }
-

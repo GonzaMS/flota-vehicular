@@ -1,6 +1,6 @@
 package com.proyecto.flotavehicular_webapp.services.Reports;
 
-import com.proyecto.flotavehicular_webapp.models.Car;
+import com.proyecto.flotavehicular_webapp.models.Car.Car;
 import com.proyecto.flotavehicular_webapp.repositories.ICarRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import net.sf.jasperreports.engine.*;
@@ -23,7 +23,7 @@ public class CarReports {
     }
 
     public void exportReport(HttpServletResponse response) throws JRException, IOException {
-        List<Car> vehiculos = carRepository.findAll();
+        List<Car> vehicles = carRepository.findAll();
 
         // Load template .jrxml (consider using .jasper precompiled file if available)
         try (InputStream templateStream = getClass().getResourceAsStream("/reports/car_reports.jrxml")) {
@@ -35,7 +35,7 @@ public class CarReports {
             JasperReport jasperReport = JasperCompileManager.compileReport(templateStream);
 
             // Prepare the data source
-            JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(vehiculos);
+            JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(vehicles);
             Map<String, Object> parameters = new HashMap<>();
             parameters.put("createdBy", "Sistema de Gestión de Vehículos");
 

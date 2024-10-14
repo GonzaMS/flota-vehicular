@@ -5,6 +5,7 @@ import com.proyecto.flotavehicular_webapp.utils.ViewConstants;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -13,6 +14,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
+import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -185,4 +187,27 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(errorObject, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    // Access Denied Exception handling
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public Object handleAccessDeniedException(AuthorizationDeniedException ex, HttpServletRequest request) {
+        String acceptHeader = request.getHeader(ViewConstants.REQUEST_HEADER);
+
+        if (acceptHeader != null && acceptHeader.contains(ViewConstants.HEADER_CONTAINS_HTML)) {
+            ModelAndView mav = new ModelAndView(ViewConstants.ERROR_404_PAGE);
+            mav.addObject("message", "Required Admin Role");
+            return mav;
+        }
+
+        ErrorDTO errorObject = new ErrorDTO(
+                request.getRequestURI(),
+                "Forbidden",
+                "Required Admin Role",
+                LocalDateTime.now().format(FORMATTER),
+                HttpStatus.FORBIDDEN.value()
+        );
+
+        return new ResponseEntity<>(errorObject, HttpStatus.FORBIDDEN);
+    }
+
 }

@@ -1,7 +1,7 @@
 package com.proyecto.flotavehicular_webapp.services;
 
-import com.proyecto.flotavehicular_webapp.dto.CarIncidentsDTO;
-import com.proyecto.flotavehicular_webapp.models.CarIncidents;
+import com.proyecto.flotavehicular_webapp.dto.car.CarIncidentsDTO;
+import com.proyecto.flotavehicular_webapp.models.Car.CarIncidents;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
 
 import java.util.Date;

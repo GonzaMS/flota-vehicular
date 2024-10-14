@@ -1,9 +1,9 @@
 package com.proyecto.flotavehicular_webapp.services.Impl;
 
-import com.proyecto.flotavehicular_webapp.dto.CarDTO;
+import com.proyecto.flotavehicular_webapp.dto.car.CarDTO;
 import com.proyecto.flotavehicular_webapp.enums.ESTATES;
 import com.proyecto.flotavehicular_webapp.exceptions.NotFoundException;
-import com.proyecto.flotavehicular_webapp.models.Car;
+import com.proyecto.flotavehicular_webapp.models.Car.Car;
 import com.proyecto.flotavehicular_webapp.repositories.ICarRepository;
 import com.proyecto.flotavehicular_webapp.services.ICarService;
 import com.proyecto.flotavehicular_webapp.services.Redis.RedisServiceImpl;
@@ -20,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -41,7 +42,7 @@ public class ICarServiceImpl implements ICarService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
     public PageResponse<CarDTO> getAll(int pageNumber, int pageSize) {
         try {
             Pageable pageable = PageRequest.of(pageNumber, pageSize);
@@ -65,7 +66,7 @@ public class ICarServiceImpl implements ICarService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
     @Cacheable(value = "sd", cacheManager = "cacheManagerWithoutTtl", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_car_', #id)")
     public CarDTO getById(Long id) {
         Car car = carRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
@@ -73,19 +74,22 @@ public class ICarServiceImpl implements ICarService {
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class, timeout = 5)
     public Car save(CarDTO carDTO) {
         try {
             Car car = mapToEntity(carDTO);
             return carRepository.save(car);
+        } catch (NotFoundException e) {
+            log.error("Rollback triggered - Parameters: carDTO={}, carId={}", carDTO, carDTO.getId());
+            throw e;
         } catch (Exception e) {
-            log.error("Error saving car: {}", e.getMessage());
-            throw new ServiceException("Error saving car");
+            log.error("Rollback triggered - Error saving incident: {}, Parameters: carIncidentsDTO={}, carId={}", e.getMessage(), carDTO, carDTO.getId());
+            throw new ServiceException("Error saving incident");
         }
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class, timeout = 10)
     @CachePut(value = "sd", cacheManager = "cacheManagerWithoutTtl", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_car_', #id)", unless = "#result == null")
     public CarDTO update(Long id, CarDTO carDTO) {
         try {
@@ -102,32 +106,32 @@ public class ICarServiceImpl implements ICarService {
             return mapToDTO(car);
 
         } catch (NotFoundException e) {
-            log.error("Car with id {} not found", id);
+            log.error("Rollback triggered - Parameters: id={}, carDTO={}", id, carDTO);
             throw e;
         } catch (Exception e) {
-            log.error("Error updating car: {}", e.getMessage());
+            log.error("Rollback triggered - Error updating Car: {}, Parameters: id={}, carDTO={}", e.getMessage(), id, carDTO);
             throw new ServiceException("Error updating car");
         }
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.NOT_SUPPORTED, rollbackFor = Exception.class, timeout = 10)
     @CacheEvict(value = "sd", cacheManager = "cacheManagerWithoutTtl", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_car_', #id)")
     public void delete(Long id) {
         try {
             Car car = carRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
             carRepository.delete(car);
         } catch (NotFoundException e) {
-            log.error("Car with id {} not found", id);
+            log.error("Rollback triggered - Parameters: id={}", id);
             throw e;
         } catch (Exception e) {
-            log.error("Error deleting car: {}", e.getMessage());
+            log.error("Rollback triggered - Error deleting Car: {}, Parameters: id={}", e.getMessage(), id);
             throw new ServiceException("Error deleting car");
         }
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.NOT_SUPPORTED, rollbackFor = Exception.class, timeout = 10)
     @CachePut(value = "sd", cacheManager = "cacheManagerWithoutTtl", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_car_', #id)")
     public void deactivate(Long id) {
         try {
@@ -135,11 +139,28 @@ public class ICarServiceImpl implements ICarService {
             car.setState(ESTATES.INACTIVE);
             carRepository.save(car);
         } catch (NotFoundException e) {
-            log.error("Car with id {} not found", id);
+            log.error("Rollback triggered - Parameters: id={}", id);
             throw e;
         } catch (Exception e) {
-            log.error("Error deactivating car: {}", e.getMessage());
+            log.error("Rollback triggered - Error deactivating Car: {}, Parameters: id={}", e.getMessage(), id);
             throw new ServiceException("Error deactivating car");
+        }
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.NOT_SUPPORTED, rollbackFor = Exception.class, timeout = 10)
+    @CachePut(value = "sd", cacheManager = "cacheManagerWithoutTtl", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_car_', #id)")
+    public void activate(Long id) {
+        try {
+            Car car = carRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
+            car.setState(ESTATES.ACTIVE);
+            carRepository.save(car);
+        } catch (NotFoundException e) {
+            log.error("Rollback triggered - Parameters: id={}", id);
+            throw e;
+        } catch (Exception e) {
+            log.error("Rollback triggered - Error activating Car: {}, Parameters: id={}", e.getMessage(), id);
+            throw new ServiceException("Error activating car");
         }
     }
 

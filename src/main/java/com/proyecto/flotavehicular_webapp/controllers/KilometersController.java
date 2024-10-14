@@ -1,14 +1,15 @@
 package com.proyecto.flotavehicular_webapp.controllers;
 
 
-import com.proyecto.flotavehicular_webapp.dto.KilometersDTO;
-import com.proyecto.flotavehicular_webapp.models.Kilometers;
+import com.proyecto.flotavehicular_webapp.dto.car.KilometersDTO;
+import com.proyecto.flotavehicular_webapp.models.Car.Kilometers;
 import com.proyecto.flotavehicular_webapp.services.IKilometersService;
 import com.proyecto.flotavehicular_webapp.utils.DateRange;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -47,12 +48,15 @@ public class KilometersController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Kilometers> saveKilometers(@Valid @RequestBody KilometersDTO kilometersDTO) {
         Kilometers newKilometers = kilometersService.save(kilometersDTO);
+
         return ResponseEntity.ok(newKilometers);
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<KilometersDTO> updateKilometers(@PathVariable Long id, @RequestBody KilometersDTO kilometersDTO) {
 
         kilometersService.update(id, kilometersDTO);
@@ -63,6 +67,7 @@ public class KilometersController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Boolean> deleteKilometers(@PathVariable Long id) {
         kilometersService.delete(id);
         return ResponseEntity.noContent().build();

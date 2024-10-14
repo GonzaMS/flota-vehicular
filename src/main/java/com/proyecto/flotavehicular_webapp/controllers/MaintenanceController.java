@@ -1,7 +1,7 @@
 package com.proyecto.flotavehicular_webapp.controllers;
 
-import com.proyecto.flotavehicular_webapp.dto.MaintenanceHistoryDTO;
-import com.proyecto.flotavehicular_webapp.models.MaintenanceHistory;
+import com.proyecto.flotavehicular_webapp.dto.car.MaintenanceHistoryDTO;
+import com.proyecto.flotavehicular_webapp.models.Car.MaintenanceHistory;
 import com.proyecto.flotavehicular_webapp.services.IMaintenanceService;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
 import jakarta.validation.Valid;
