@@ -47,7 +47,7 @@ El **Proyecto de Control de Flota Vehicular** es un sistema diseñado para gesti
 1. En el archivo `src/main/resources/application.properties` o `application.yml`, configura los siguientes parámetros para la conexión a la base de datos:
 
 ```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/control_flotas
+spring.datasource.url=jdbc:postgresql://localhost:5432/{database_name}
 spring.datasource.username=username
 spring.datasource.password=password
 spring.jpa.hibernate.ddl-auto=update
