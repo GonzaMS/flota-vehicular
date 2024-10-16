@@ -34,9 +34,9 @@ public class KilometersController {
 
         PageResponse<KilometersDTO> kilometersPageResponse = kilometersService.getAll(pageNumber, effectivePageSize);
 
-        if (kilometersPageResponse.items().isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
+//        if (kilometersPageResponse.items().isEmpty()) {
+//            return ResponseEntity.noContent().build();
+//        }
 
         return ResponseEntity.ok(kilometersPageResponse);
     }
@@ -84,9 +84,9 @@ public class KilometersController {
 
         PageResponse<KilometersDTO> kilometersPageResponse = kilometersService.getByCarId(carId, pageNumber, effectivePageSize);
 
-        if (kilometersPageResponse.items().isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
+//        if (kilometersPageResponse.items().isEmpty()) {
+//            return ResponseEntity.noContent().build();
+//        }
 
         return ResponseEntity.ok(kilometersPageResponse);
     }
@@ -101,9 +101,9 @@ public class KilometersController {
 
         PageResponse<KilometersDTO> kilometersPageResponse = kilometersService.getByDate(dateRange.getStartDate(), dateRange.getEndDate(), pageNumber, effectivePageSize);
 
-        if (kilometersPageResponse.items().isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
+//        if (kilometersPageResponse.items().isEmpty()) {
+//            return ResponseEntity.noContent().build();
+//        }
 
         return ResponseEntity.ok(kilometersPageResponse);
     }
@@ -119,9 +119,9 @@ public class KilometersController {
 
         PageResponse<KilometersDTO> kilometersPageResponse = kilometersService.getByCarIdAndDate(carId, dateRange.getStartDate(), dateRange.getEndDate(), pageNumber, effectivePageSize);
 
-        if (kilometersPageResponse.items().isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
+//        if (kilometersPageResponse.items().isEmpty()) {
+//            return ResponseEntity.noContent().build();
+//        }
 
         return ResponseEntity.ok(kilometersPageResponse);
     }

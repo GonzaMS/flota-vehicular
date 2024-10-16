@@ -32,9 +32,9 @@ public class MaintenanceController {
 
         PageResponse<MaintenanceHistoryDTO> maintenanceDTOPageResponse = maintenanceService.getAll(pageNumber, effectivePageSize);
 
-        if (maintenanceDTOPageResponse.items().isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
+//        if (maintenanceDTOPageResponse.items().isEmpty()) {
+//            return ResponseEntity.noContent().build();
+//        }
 
         return ResponseEntity.ok(maintenanceDTOPageResponse);
     }
@@ -80,9 +80,9 @@ public class MaintenanceController {
 
         PageResponse<MaintenanceHistoryDTO> maintenanceDTOPageResponse = maintenanceService.getByCarId(carId, pageNumber, effectivePageSize);
 
-        if (maintenanceDTOPageResponse.items().isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
+//        if (maintenanceDTOPageResponse.items().isEmpty()) {
+//            return ResponseEntity.noContent().build();
+//        }
 
         return ResponseEntity.ok(maintenanceDTOPageResponse);
     }

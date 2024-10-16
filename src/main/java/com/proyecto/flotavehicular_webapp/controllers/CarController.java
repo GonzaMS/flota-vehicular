@@ -38,9 +38,9 @@ public class CarController {
 
         PageResponse<CarDTO> carPageResponse = carService.getAll(pageNumber, effectivePageSize);
 
-        if (carPageResponse.items().isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
+//        if (carPageResponse.items().isEmpty()) {
+//            return ResponseEntity.noContent().build();
+//        }
 
         return ResponseEntity.ok(carPageResponse);
     }
@@ -168,9 +168,9 @@ public class CarController {
 
         PageResponse<CarDTO> carPageResponse = carService.getByState(state, pageNumber, effectivePageSize);
 
-        if (carPageResponse.items().isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
+//        if (carPageResponse.items().isEmpty()) {
+//            return ResponseEntity.noContent().build();
+//        }
 
         return ResponseEntity.ok(carPageResponse);
     }
@@ -185,9 +185,9 @@ public class CarController {
 
         PageResponse<CarDTO> carPageResponse = carService.getByBrand(brand, pageNumber, effectivePageSize);
 
-        if (carPageResponse.items().isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
+//        if (carPageResponse.items().isEmpty()) {
+//            return ResponseEntity.noContent().build();
+//        }
 
         return ResponseEntity.ok(carPageResponse);
     }
@@ -202,9 +202,9 @@ public class CarController {
 
         PageResponse<CarDTO> carPageResponse = carService.getByModel(model, pageNumber, effectivePageSize);
 
-        if (carPageResponse.items().isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
+//        if (carPageResponse.items().isEmpty()) {
+//            return ResponseEntity.noContent().build();
+//        }
 
         return ResponseEntity.ok(carPageResponse);
     }
@@ -218,10 +218,10 @@ public class CarController {
         int effectivePageSize = (pageSize != null) ? pageSize : defaultPageSize;
 
         PageResponse<CarDTO> carPageResponse = carService.getByLicensePlate(licensePlate, pageNumber, effectivePageSize);
-
-        if (carPageResponse.items().isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
+//
+//        if (carPageResponse.items().isEmpty()) {
+//            return ResponseEntity.noContent().build();
+//        }
 
         return ResponseEntity.ok(carPageResponse);
     }

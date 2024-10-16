@@ -18,10 +18,7 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 public class JwtService {
-
-    @Value("${security.jwt.token-expiration}")
-    private long jwtExpiration;
-
+    
     @Value("${security.jwt.secret-key}")
     private String secretKey;
 
