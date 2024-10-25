@@ -10,12 +10,12 @@
     <!-- Parameters -->
     <parameter name="createdBy"/>
 
-    <!-- Fields (Usar nombres de CarDTO) -->
-    <field name="carLicensePlate"/>
-    <field name="carBrand"/>
-    <field name="carModel"/>
-    <field name="carFabricationYear"/>
-    <field name="carState" class="java.lang.Enum"/>
+    <!-- Fields (Usar nombres de CarDTO o Car) -->
+    <field name="car.licensePlate"/>
+    <field name="car.brand"/>
+    <field name="car.model"/>
+    <field name="car.fabricationYear"/>
+    <field name="car.state" class="com.proyecto.flotavehicular_webapp.enums.ESTATES"/>
     <field name="maintenanceHistories" class="java.util.List"/>
 
     <!-- Report Title -->
@@ -88,53 +88,40 @@
 
     <!-- Detail -->
     <detail>
-        <band height="55"> <!-- Aquí se ajusta la altura de la banda -->
-            <!-- Información del vehículo -->
+        <band height="100">
             <textField>
-                <reportElement x="0" y="0" width="80" height="25" forecolor="#000000" backcolor="#FFFFFF"
-                               mode="Opaque"/>
-                <textElement textAlignment="Center">
-                    <font size="9"/>
-                </textElement>
-                <textFieldExpression><![CDATA[$F{carLicensePlate}]]></textFieldExpression>
-            </textField>
-            <textField>
-                <reportElement x="80" y="0" width="80" height="25" forecolor="#000000" backcolor="#FFFFFF"
-                               mode="Opaque"/>
-                <textElement textAlignment="Center">
-                    <font size="9"/>
-                </textElement>
-                <textFieldExpression><![CDATA[$F{carBrand}]]></textFieldExpression>
-            </textField>
-            <textField>
-                <reportElement x="160" y="0" width="80" height="25" forecolor="#000000" backcolor="#FFFFFF"
-                               mode="Opaque"/>
-                <textElement textAlignment="Center">
-                    <font size="9"/>
-                </textElement>
-                <textFieldExpression><![CDATA[$F{carModel}]]></textFieldExpression>
-            </textField>
-            <textField>
-                <reportElement x="240" y="0" width="80" height="25" forecolor="#000000" backcolor="#FFFFFF"
-                               mode="Opaque"/>
-                <textElement textAlignment="Center">
-                    <font size="9"/>
-                </textElement>
-                <textFieldExpression><![CDATA[$F{carFabricationYear}]]></textFieldExpression>
-            </textField>
-            <textField>
-                <reportElement x="320" y="0" width="80" height="25" forecolor="#000000" backcolor="#FFFFFF"
-                               mode="Opaque"/>
-                <textElement textAlignment="Center">
-                    <font size="9"/>
-                </textElement>
-                <textFieldExpression><![CDATA[$F{carState}]]></textFieldExpression>
+                <reportElement x="0" y="0" width="100" height="20"/>
+                <textElement textAlignment="Center"/>
+                <textFieldExpression><![CDATA[$F{car.licensePlate}]]></textFieldExpression>
             </textField>
 
-            <!-- Mostrar el contenido completo de maintenanceHistories para depuración -->
             <textField>
-                <reportElement x="0" y="30" width="555" height="25" forecolor="#000000" backcolor="#FFFFFF"
-                               mode="Opaque"/>
+                <reportElement x="0" y="20" width="100" height="20"/>
+                <textElement textAlignment="Center"/>
+                <textFieldExpression><![CDATA[$F{car.brand}]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement x="0" y="40" width="100" height="20"/>
+                <textElement textAlignment="Center"/>
+                <textFieldExpression><![CDATA[$F{car.model}]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement x="0" y="60" width="100" height="20"/>
+                <textElement textAlignment="Center"/>
+                <textFieldExpression><![CDATA[$F{car.fabricationYear}]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement x="0" y="80" width="100" height="20"/>
+                <textElement textAlignment="Center"/>
+                <!-- Aquí se asegura de que el campo sea un enum y usa el método name() -->
+                <textFieldExpression><![CDATA[$F{car.state}.name()]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement x="0" y="30" width="555" height="25" forecolor="#000000" backcolor="#FFFFFF" mode="Opaque"/>
                 <textElement textAlignment="Left">
                     <font size="9"/>
                 </textElement>
