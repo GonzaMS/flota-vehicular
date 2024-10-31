@@ -1,13 +1,13 @@
 package com.proyecto.flotavehicular_webapp.controllers;
 
-import com.proyecto.flotavehicular_webapp.dto.PerformanceEvaluationDTO;
-import com.proyecto.flotavehicular_webapp.models.PerformanceEvaluation;
+import com.proyecto.flotavehicular_webapp.dto.driver.PerformanceEvaluationDTO;
+import com.proyecto.flotavehicular_webapp.models.Driver.PerformanceEvaluation;
 import com.proyecto.flotavehicular_webapp.services.IPerformanceEvaluationService;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
 import com.proyecto.flotavehicular_webapp.utils.DateRange;
-import io.lettuce.core.dynamic.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
@@ -37,6 +37,7 @@ public class PerformanceEvaluationController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PerformanceEvaluation> savePerformanceEvaluation(@Valid @RequestBody PerformanceEvaluationDTO performanceEvaluationDTO) {
         PerformanceEvaluation newEvaluation = performanceEvaluationService.saveEvaluation(performanceEvaluationDTO);
         if (newEvaluation == null) {
@@ -47,6 +48,7 @@ public class PerformanceEvaluationController {
 
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> updatePerformanceEvaluation(
             @PathVariable Long id,
             @Valid @RequestBody PerformanceEvaluationDTO performanceEvaluationDTO) {
@@ -55,6 +57,7 @@ public class PerformanceEvaluationController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deletePerformanceEvaluation(@PathVariable Long id) {
         performanceEvaluationService.deleteEvaluation(id);
         return ResponseEntity.noContent().build();

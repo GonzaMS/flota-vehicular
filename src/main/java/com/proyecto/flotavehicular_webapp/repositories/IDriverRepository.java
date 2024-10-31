@@ -1,7 +1,7 @@
 package com.proyecto.flotavehicular_webapp.repositories;
 
 import com.proyecto.flotavehicular_webapp.enums.ESTATES;
-import com.proyecto.flotavehicular_webapp.models.Driver;
+import com.proyecto.flotavehicular_webapp.models.Driver.Driver;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

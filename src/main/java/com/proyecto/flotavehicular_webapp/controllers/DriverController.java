@@ -1,13 +1,14 @@
 package com.proyecto.flotavehicular_webapp.controllers;
 
-import com.proyecto.flotavehicular_webapp.dto.DriverDTO;
-import com.proyecto.flotavehicular_webapp.models.Driver;
+import com.proyecto.flotavehicular_webapp.dto.driver.DriverDTO;
+import com.proyecto.flotavehicular_webapp.models.Driver.Driver;
 import com.proyecto.flotavehicular_webapp.services.IDriverService;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/v1/drivers")
@@ -26,9 +27,6 @@ public class DriverController {
 
         PageResponse<DriverDTO> driverPageResponse = driverService.getAllDrivers(pageNumber, pageSize);
 
-        if (driverPageResponse.items().isEmpty()) {
-            return ResponseEntity.noContent().build();
-        }
 
         return ResponseEntity.ok(driverPageResponse);
     }
@@ -45,6 +43,7 @@ public class DriverController {
     }
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Driver> saveDriver(@Valid @RequestBody DriverDTO driverDTO) {
         Driver newDriver = driverService.saveDriver(driverDTO);
 
@@ -55,6 +54,7 @@ public class DriverController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<DriverDTO> updateDriver(
             @PathVariable Long id,
             @Valid @RequestBody DriverDTO driverDTO) {
@@ -66,6 +66,7 @@ public class DriverController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteDriver(@PathVariable Long id) {
         driverService.deleteDriver(id);
         return ResponseEntity.ok().build();

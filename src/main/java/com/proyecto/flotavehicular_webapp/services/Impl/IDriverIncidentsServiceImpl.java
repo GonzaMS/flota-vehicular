@@ -1,9 +1,9 @@
 package com.proyecto.flotavehicular_webapp.services.Impl;
 
-import com.proyecto.flotavehicular_webapp.dto.DriverIncidentsDTO;
+import com.proyecto.flotavehicular_webapp.dto.driver.DriverIncidentsDTO;
 import com.proyecto.flotavehicular_webapp.exceptions.NotFoundException;
-import com.proyecto.flotavehicular_webapp.models.Driver;
-import com.proyecto.flotavehicular_webapp.models.DriverIncidents;
+import com.proyecto.flotavehicular_webapp.models.Driver.Driver;
+import com.proyecto.flotavehicular_webapp.models.Driver.DriverIncidents;
 import com.proyecto.flotavehicular_webapp.repositories.IDriverIncidentsRepository;
 import com.proyecto.flotavehicular_webapp.repositories.IDriverRepository;
 import com.proyecto.flotavehicular_webapp.services.IDriverIncidentsService;

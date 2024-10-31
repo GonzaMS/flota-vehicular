@@ -5,14 +5,19 @@ import com.proyecto.flotavehicular_webapp.utils.ViewConstants;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashSet;
+import java.util.Set;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -64,7 +69,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorObject, HttpStatus.NOT_FOUND);
     }
 
-
     // 400
     @ExceptionHandler(BadRequestException.class)
     public Object handleBadRequestException(BadRequestException ex, HttpServletRequest request) {
@@ -82,6 +86,34 @@ public class GlobalExceptionHandler {
                 ex.getMessage(),
                 LocalDateTime.now().format(FORMATTER),
                 HttpStatus.BAD_REQUEST.value()
+        );
+
+        return new ResponseEntity<>(errorObject, HttpStatus.BAD_REQUEST);
+    }
+
+    //404
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public Object handleMethodArgumentNotValidException(MethodArgumentNotValidException ex, HttpServletRequest request) {
+        String acceptHeader = request.getHeader(ViewConstants.REQUEST_HEADER);
+
+        if (acceptHeader != null && acceptHeader.contains(ViewConstants.HEADER_CONTAINS_HTML)) {
+            ModelAndView mav = new ModelAndView(ViewConstants.ERROR_400_PAGE);
+            mav.addObject("message", ex.getMessage());
+            return mav;
+        }
+
+        Set<String> errors = new HashSet<>();
+        ex.getBindingResult().getFieldErrors().forEach(error -> {
+            errors.add(error.getField() + ": " + error.getDefaultMessage());
+        });
+
+        ErrorDTO errorObject = new ErrorDTO(
+                request.getRequestURI(),
+                "Validation Failed",
+                ex.getMessage(),
+                LocalDateTime.now().format(FORMATTER),
+                HttpStatus.BAD_REQUEST.value(),
+                errors
         );
 
         return new ResponseEntity<>(errorObject, HttpStatus.BAD_REQUEST);
@@ -130,4 +162,49 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(errorObject, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    // 500
+    @ExceptionHandler(HttpClientErrorException.class)
+    public Object handleHttpClientErrorException(HttpClientErrorException ex, HttpServletRequest request) {
+        String acceptHeader = request.getHeader(ViewConstants.REQUEST_HEADER);
+
+        if (acceptHeader != null && acceptHeader.contains(ViewConstants.HEADER_CONTAINS_HTML)) {
+            ModelAndView mav = new ModelAndView(ViewConstants.ERROR_500_PAGE);
+            mav.addObject("message", ex.getMessage());
+            return mav;
+        }
+
+        ErrorDTO errorObject = new ErrorDTO(
+                request.getRequestURI(),
+                "Internal Server Error",
+                ex.getMessage(),
+                LocalDateTime.now().format(FORMATTER),
+                HttpStatus.INTERNAL_SERVER_ERROR.value()
+        );
+
+        return new ResponseEntity<>(errorObject, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    // Access Denied Exception handling
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    public Object handleAccessDeniedException(AuthorizationDeniedException ex, HttpServletRequest request) {
+        String acceptHeader = request.getHeader(ViewConstants.REQUEST_HEADER);
+
+        if (acceptHeader != null && acceptHeader.contains(ViewConstants.HEADER_CONTAINS_HTML)) {
+            ModelAndView mav = new ModelAndView(ViewConstants.ERROR_404_PAGE);
+            mav.addObject("message", "Required Admin Role");
+            return mav;
+        }
+
+        ErrorDTO errorObject = new ErrorDTO(
+                request.getRequestURI(),
+                "Forbidden",
+                "Required Admin Role",
+                LocalDateTime.now().format(FORMATTER),
+                HttpStatus.FORBIDDEN.value()
+        );
+
+        return new ResponseEntity<>(errorObject, HttpStatus.FORBIDDEN);
+    }
+
 }

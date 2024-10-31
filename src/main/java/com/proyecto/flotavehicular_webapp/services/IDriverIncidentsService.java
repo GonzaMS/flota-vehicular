@@ -1,8 +1,8 @@
 package com.proyecto.flotavehicular_webapp.services;
 
-import com.proyecto.flotavehicular_webapp.dto.DriverIncidentsDTO;
+import com.proyecto.flotavehicular_webapp.dto.driver.DriverIncidentsDTO;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
-import com.proyecto.flotavehicular_webapp.models.DriverIncidents;
+import com.proyecto.flotavehicular_webapp.models.Driver.DriverIncidents;
 
 
 public interface IDriverIncidentsService {

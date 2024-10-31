@@ -1,7 +1,7 @@
 package com.proyecto.flotavehicular_webapp.services;
 
-import com.proyecto.flotavehicular_webapp.dto.PerformanceEvaluationDTO;
-import com.proyecto.flotavehicular_webapp.models.PerformanceEvaluation;
+import com.proyecto.flotavehicular_webapp.dto.driver.PerformanceEvaluationDTO;
+import com.proyecto.flotavehicular_webapp.models.Driver.PerformanceEvaluation;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
 
 import java.util.Date;

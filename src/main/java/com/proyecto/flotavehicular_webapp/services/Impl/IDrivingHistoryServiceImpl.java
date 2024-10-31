@@ -1,10 +1,10 @@
 package com.proyecto.flotavehicular_webapp.services.Impl;
 
-import com.proyecto.flotavehicular_webapp.dto.DrivingHistoryDTO;
+import com.proyecto.flotavehicular_webapp.dto.driver.DrivingHistoryDTO;
 import com.proyecto.flotavehicular_webapp.exceptions.NotFoundException;
-import com.proyecto.flotavehicular_webapp.models.Car;
-import com.proyecto.flotavehicular_webapp.models.Driver;
-import com.proyecto.flotavehicular_webapp.models.DrivingHistory;
+import com.proyecto.flotavehicular_webapp.models.Car.Car;
+import com.proyecto.flotavehicular_webapp.models.Driver.Driver;
+import com.proyecto.flotavehicular_webapp.models.Driver.DrivingHistory;
 import com.proyecto.flotavehicular_webapp.repositories.IDriverRepository;
 import com.proyecto.flotavehicular_webapp.repositories.IDrivingHistoryRepository;
 import com.proyecto.flotavehicular_webapp.services.ExternalApiService;
@@ -84,10 +84,13 @@ public class IDrivingHistoryServiceImpl implements IDrivingHistoryService {
 
     @Override
     @Transactional
-    public DrivingHistory saveDrivingHistory(DrivingHistoryDTO drivingHistoryDTO) {
+    public DrivingHistory saveDrivingHistory(DrivingHistoryDTO drivingHistoryDTO, String token) {
         try {
-            Driver driver = driverRepository.findById(drivingHistoryDTO.getDriverId()).orElseThrow(() -> new NotFoundException("Driver not found"));
-            Car car = externalApiService.callExternalApi(drivingHistoryDTO.getCarId());
+            Driver driver = driverRepository.findById(drivingHistoryDTO.getDriverId())
+                    .orElseThrow(() -> new NotFoundException("Driver not found"));
+
+            // Llamar a la API externa pasando el token JWT
+            Car car = externalApiService.callExternalApi(drivingHistoryDTO.getCarId(), token);
             if (car == null){
                 throw new NotFoundException("Car not found");
             }

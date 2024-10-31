@@ -1,7 +1,7 @@
 package com.proyecto.flotavehicular_webapp.services;
 
-import com.proyecto.flotavehicular_webapp.dto.DriverDTO;
-import com.proyecto.flotavehicular_webapp.models.Driver;
+import com.proyecto.flotavehicular_webapp.dto.driver.DriverDTO;
+import com.proyecto.flotavehicular_webapp.models.Driver.Driver;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
 
 public interface IDriverService {

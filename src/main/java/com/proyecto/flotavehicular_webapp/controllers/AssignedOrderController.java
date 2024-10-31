@@ -1,14 +1,16 @@
 package com.proyecto.flotavehicular_webapp.controllers;
 
-import com.proyecto.flotavehicular_webapp.dto.AssignedOrderDTO;
-import com.proyecto.flotavehicular_webapp.models.AssignedOrder;
+import com.proyecto.flotavehicular_webapp.dto.travel.AssignedOrderDTO;
+import com.proyecto.flotavehicular_webapp.models.Travel.AssignedOrder;
 import com.proyecto.flotavehicular_webapp.services.IAssignedOrderService;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 @RestController
 @RequestMapping("/api/v1/assigned-orders")
@@ -27,25 +29,29 @@ public class AssignedOrderController {
         return ResponseEntity.ok(assignedOrderDTO);
     }
 
-    @PostMapping
-    public ResponseEntity<AssignedOrder> createAssignedOrder(@RequestBody AssignedOrderDTO assignedOrderDTO) {
-        AssignedOrder assignedOrder = assignedOrderService.saveAssignedOrder(assignedOrderDTO);
-        return ResponseEntity.status(HttpStatus.CREATED).body(assignedOrder);
+    @PostMapping("/assigned-orders")
+    public ResponseEntity<AssignedOrder> saveAssignedOrder(
+            @RequestBody AssignedOrderDTO assignedOrderDTO,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
+
+        AssignedOrder savedOrder = assignedOrderService.saveAssignedOrder(assignedOrderDTO, token);
+        return ResponseEntity.status(HttpStatus.CREATED).body(savedOrder);
     }
 
-    @PutMapping("/{id}")
+
+    @PutMapping("/assigned-orders/{id}")
     public ResponseEntity<AssignedOrderDTO> updateAssignedOrder(
             @PathVariable Long id,
-            @Valid @RequestBody AssignedOrderDTO orderDTO) {
+            @RequestBody AssignedOrderDTO assignedOrderDTO,
+            @RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
 
-        assignedOrderService.updateAssignedOrder(id, orderDTO);
-
-        AssignedOrderDTO updateOrder = assignedOrderService.getAssignedOrderById(id);
-
-        return ResponseEntity.ok().body(updateOrder);
+        AssignedOrderDTO updatedOrder = assignedOrderService.updateAssignedOrder(id, assignedOrderDTO, token);
+        return ResponseEntity.ok(updatedOrder);
     }
 
+
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteAssignedOrder(@PathVariable Long id) {
         assignedOrderService.deleteAssignedOrder(id);
         return ResponseEntity.noContent().build();

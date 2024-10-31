@@ -1,10 +1,10 @@
 package com.proyecto.flotavehicular_webapp.services.Impl;
 
-import com.proyecto.flotavehicular_webapp.dto.PerformanceEvaluationDTO;
+import com.proyecto.flotavehicular_webapp.dto.driver.PerformanceEvaluationDTO;
 import com.proyecto.flotavehicular_webapp.exceptions.NotFoundException;
-import com.proyecto.flotavehicular_webapp.models.Driver;
+import com.proyecto.flotavehicular_webapp.models.Driver.Driver;
 import com.proyecto.flotavehicular_webapp.repositories.IDriverRepository;
-import com.proyecto.flotavehicular_webapp.models.PerformanceEvaluation;
+import com.proyecto.flotavehicular_webapp.models.Driver.PerformanceEvaluation;
 import com.proyecto.flotavehicular_webapp.repositories.IPerformanceEvaluationRepository;
 import com.proyecto.flotavehicular_webapp.services.IPerformanceEvaluationService;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;

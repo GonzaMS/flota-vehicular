@@ -1,6 +1,6 @@
 package com.proyecto.flotavehicular_webapp.repositories;
 
-import com.proyecto.flotavehicular_webapp.models.PerformanceEvaluation;
+import com.proyecto.flotavehicular_webapp.models.Driver.PerformanceEvaluation;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,10 +1,10 @@
 package com.proyecto.flotavehicular_webapp.services.Impl;
 
-import com.proyecto.flotavehicular_webapp.dto.AssignedOrderDTO;
+import com.proyecto.flotavehicular_webapp.dto.travel.AssignedOrderDTO;
 import com.proyecto.flotavehicular_webapp.exceptions.NotFoundException;
-import com.proyecto.flotavehicular_webapp.models.AssignedOrder;
-import com.proyecto.flotavehicular_webapp.models.Car;
-import com.proyecto.flotavehicular_webapp.models.Driver;
+import com.proyecto.flotavehicular_webapp.models.Travel.AssignedOrder;
+import com.proyecto.flotavehicular_webapp.models.Car.Car;
+import com.proyecto.flotavehicular_webapp.models.Driver.Driver;
 import com.proyecto.flotavehicular_webapp.repositories.IAssignedOrderRepository;
 import com.proyecto.flotavehicular_webapp.repositories.IDriverRepository;
 import com.proyecto.flotavehicular_webapp.services.ExternalApiService;
@@ -90,61 +90,69 @@ public class IAssignedOrderServiceImpl implements IAssignedOrderService{
             return mapToDTO(assignedOrder);
         }
 
-        @Override
-        @Transactional
-        public AssignedOrder saveAssignedOrder(AssignedOrderDTO assignedOrderDTO) {
-            try {
-                Driver driver = driverRepository.findById(assignedOrderDTO.getDriverId())
-                        .orElseThrow(() -> new NotFoundException(DRIVER_NOT_FOUND));
-                Car car = externalApiService.callExternalApi(assignedOrderDTO.getCarId());
-                if (car == null){
-                    throw new NotFoundException("Car not found");
-                }
+    @Override
+    @Transactional
+    public AssignedOrder saveAssignedOrder(AssignedOrderDTO assignedOrderDTO, String token) {
+        try {
+            // Buscar el conductor
+            Driver driver = driverRepository.findById(assignedOrderDTO.getDriverId())
+                    .orElseThrow(() -> new NotFoundException(DRIVER_NOT_FOUND));
 
-                AssignedOrder assignedOrder = mapToEntity(assignedOrderDTO);
-                assignedOrder.setDriver(driver);
-                assignedOrder.setCar(car);
-
-                return assignedOrderRepository.save(assignedOrder);
-            } catch (NotFoundException e) {
-                logger.error("Car with id {} not found", assignedOrderDTO.getCarId());
-                throw e;
-            } catch (Exception e) {
-                logger.error("Error saving assigned orders: {}", e.getMessage());
-                throw new ServiceException("Error saving assigned orders");
+            // Llamar a la API externa pasando el token JWT
+            Car car = externalApiService.callExternalApi(assignedOrderDTO.getCarId(), token);
+            if (car == null) {
+                throw new NotFoundException("Car not found");
             }
 
+            // Mapear la DTO a la entidad AssignedOrder
+            AssignedOrder assignedOrder = mapToEntity(assignedOrderDTO);
+            assignedOrder.setDriver(driver);
+            assignedOrder.setCar(car);
+
+            // Guardar la orden asignada
+            return assignedOrderRepository.save(assignedOrder);
+        } catch (NotFoundException e) {
+            logger.error("Car with id {} not found", assignedOrderDTO.getCarId());
+            throw e;
+        } catch (Exception e) {
+            logger.error("Error saving assigned orders: {}", e.getMessage());
+            throw new ServiceException("Error saving assigned orders");
         }
+    }
 
-        @Override
-        @Transactional
-        @CachePut(cacheManager = "cacheManagerWithoutTtl", value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_assignedOrder_', #id)")
-        public AssignedOrderDTO updateAssignedOrder(Long id, AssignedOrderDTO assignedOrderDTO) {
-            try {
-                AssignedOrder assignedOrder = assignedOrderRepository.findById(id)
-                        .orElseThrow(() -> new NotFoundException(NOT_FOUND));
+    @Override
+    @Transactional
+    @CachePut(cacheManager = "cacheManagerWithoutTtl", value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_assignedOrder_', #id)")
+    public AssignedOrderDTO updateAssignedOrder(Long id, AssignedOrderDTO assignedOrderDTO, String token) {
+        try {
+            AssignedOrder assignedOrder = assignedOrderRepository.findById(id)
+                    .orElseThrow(() -> new NotFoundException(NOT_FOUND));
 
-                Driver driver = driverRepository.findById(assignedOrderDTO.getDriverId())
-                        .orElseThrow(() -> new NotFoundException(DRIVER_NOT_FOUND));
-                Car car = externalApiService.callExternalApi(assignedOrderDTO.getCarId());
-                if (car == null){
-                    throw new NotFoundException("Car not found");
-                }
-                assignedOrder.setItinerary(assignedOrderDTO.getItinerary());
-                assignedOrder.setDriver(driver);
-                assignedOrder.setCar(car);
-                assignedOrder.setTravelOrderId(assignedOrderDTO.getTravelOrderId());
-                assignedOrderRepository.save(assignedOrder);
+            Driver driver = driverRepository.findById(assignedOrderDTO.getDriverId())
+                    .orElseThrow(() -> new NotFoundException(DRIVER_NOT_FOUND));
 
-                return mapToDTO(assignedOrder);
-            }   catch (NotFoundException e) {
-                logger.error("assigned orders with id {} not found", id);
-                throw e;
-            } catch (Exception e) {
-                logger.error("Error updating assigned orders: {}", e.getMessage());
-                throw new ServiceException("Error updating assigned orders");
+            Car car = externalApiService.callExternalApi(assignedOrderDTO.getCarId(), token);
+            if (car == null) {
+                throw new NotFoundException("Car not found");
             }
+
+            assignedOrder.setItinerary(assignedOrderDTO.getItinerary());
+            assignedOrder.setDriver(driver);
+            assignedOrder.setCar(car);
+            assignedOrder.setTravelOrderId(assignedOrderDTO.getTravelOrderId());
+
+            assignedOrderRepository.save(assignedOrder);
+
+            return mapToDTO(assignedOrder);
+        } catch (NotFoundException e) {
+            logger.error("assigned orders with id {} not found", id);
+            throw e;
+        } catch (Exception e) {
+            logger.error("Error updating assigned orders: {}", e.getMessage());
+            throw new ServiceException("Error updating assigned orders");
         }
+    }
+
 
         @Override
         @Transactional

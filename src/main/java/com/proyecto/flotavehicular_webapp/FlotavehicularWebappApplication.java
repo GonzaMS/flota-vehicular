@@ -2,10 +2,10 @@ package com.proyecto.flotavehicular_webapp;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @SpringBootApplication
-@EntityScan(basePackages = "com.proyecto.flotavehicular_webapp.*")
+@EnableTransactionManagement
 public class FlotavehicularWebappApplication {
 
 	public static void main(String[] args) {
