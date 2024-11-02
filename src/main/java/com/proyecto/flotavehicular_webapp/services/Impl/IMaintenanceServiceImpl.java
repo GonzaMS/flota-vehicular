@@ -1,8 +1,10 @@
 package com.proyecto.flotavehicular_webapp.services.Impl;
 
+import com.proyecto.flotavehicular_webapp.dto.car.KilometersDTO;
 import com.proyecto.flotavehicular_webapp.dto.car.MaintenanceHistoryDTO;
 import com.proyecto.flotavehicular_webapp.exceptions.NotFoundException;
 import com.proyecto.flotavehicular_webapp.models.Car.Car;
+import com.proyecto.flotavehicular_webapp.models.Car.Kilometers;
 import com.proyecto.flotavehicular_webapp.models.Car.MaintenanceHistory;
 import com.proyecto.flotavehicular_webapp.repositories.ICarRepository;
 import com.proyecto.flotavehicular_webapp.repositories.IMaintenanceRepository;
@@ -162,6 +164,51 @@ public class IMaintenanceServiceImpl implements IMaintenanceService {
         } catch (Exception e) {
             log.error("Error getting maintenance by car id: {}", e.getMessage());
             throw new ServiceException("Error getting maintenance by car id");
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS, timeout = 5)
+    @Cacheable(value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_kilometers_', #startDate, #endDate)")
+    public PageResponse<MaintenanceHistoryDTO> getByDate(Date startDate, Date endDate, int pageNumber, int pageSize) {
+        try {
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+            Page<MaintenanceHistory> maintenacePage = maintenanceRepository.findByCreatedAtBetween(startDate, endDate, pageable);
+
+            if (maintenacePage.isEmpty()) {
+                throw new NotFoundException(NOTFOUND + " between dates: " + startDate + " and " + endDate);
+            }
+
+            return mapToPageResponse(maintenacePage);
+        } catch (NotFoundException e) {
+            log.error("Maintenances not found between dates: {} and {}", startDate, endDate);
+            throw e;
+        } catch (Exception e) {
+            log.error("Error getting maintenances by date: {}", e.getMessage());
+            throw new ServiceException("Error getting maintenances by date");
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true, propagation = Propagation.SUPPORTS, timeout = 5)
+    @Cacheable(value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_kilometers_', #carId, #startDate, #endDate)")
+    public PageResponse<MaintenanceHistoryDTO> getByCarIdAndDate(Long carId, Date startDate, Date endDate, int pageNumber, int pageSize) {
+        try {
+            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+
+            Page<MaintenanceHistory> maintenancePage = maintenanceRepository.findByCarIdAndCreatedAtBetween(carId, startDate, endDate, pageable);
+
+            if (maintenancePage.isEmpty()) {
+                throw new NotFoundException(NOTFOUND + " for car with id: " + carId + " between dates: " + startDate + " and " + endDate);
+            }
+
+            return mapToPageResponse(maintenancePage);
+        } catch (NotFoundException e) {
+            log.error("Maintenances not found for car with id: {} between dates: {} and {}", carId, startDate, endDate);
+            throw e;
+        } catch (Exception e) {
+            log.error("Error getting maintenances by carId and date: {}", e.getMessage());
+            throw new ServiceException("Error getting maintenances by carId and date");
         }
     }
 

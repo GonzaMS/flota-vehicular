@@ -1,8 +1,10 @@
 package com.proyecto.flotavehicular_webapp.controllers;
 
+import com.proyecto.flotavehicular_webapp.dto.car.KilometersDTO;
 import com.proyecto.flotavehicular_webapp.dto.car.MaintenanceHistoryDTO;
 import com.proyecto.flotavehicular_webapp.models.Car.MaintenanceHistory;
 import com.proyecto.flotavehicular_webapp.services.IMaintenanceService;
+import com.proyecto.flotavehicular_webapp.utils.DateRange;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,10 +33,6 @@ public class MaintenanceController {
         int effectivePageSize = (pageSize != null) ? pageSize : defaultPageSize;
 
         PageResponse<MaintenanceHistoryDTO> maintenanceDTOPageResponse = maintenanceService.getAll(pageNumber, effectivePageSize);
-
-//        if (maintenanceDTOPageResponse.items().isEmpty()) {
-//            return ResponseEntity.noContent().build();
-//        }
 
         return ResponseEntity.ok(maintenanceDTOPageResponse);
     }
@@ -80,10 +78,33 @@ public class MaintenanceController {
 
         PageResponse<MaintenanceHistoryDTO> maintenanceDTOPageResponse = maintenanceService.getByCarId(carId, pageNumber, effectivePageSize);
 
-//        if (maintenanceDTOPageResponse.items().isEmpty()) {
-//            return ResponseEntity.noContent().build();
-//        }
-
         return ResponseEntity.ok(maintenanceDTOPageResponse);
+    }
+
+    @PostMapping("/date")
+    public ResponseEntity<PageResponse<MaintenanceHistoryDTO>> getKilometersByDate(
+            @RequestBody @Valid DateRange dateRange,
+            @RequestParam(defaultValue = "0") int pageNumber,
+            @RequestParam(required = false) Integer pageSize) {
+
+        int effectivePageSize = (pageSize != null) ? pageSize : defaultPageSize;
+
+        PageResponse<MaintenanceHistoryDTO> maintenanceHistoryDTOPageResponse = maintenanceService.getByDate(dateRange.getStartDate(), dateRange.getEndDate(), pageNumber, effectivePageSize);
+
+        return ResponseEntity.ok(maintenanceHistoryDTOPageResponse);
+    }
+
+    @PostMapping("/car/{carId}/date")
+    public ResponseEntity<PageResponse<MaintenanceHistoryDTO>> getKilometersByCarIdAndDate(
+            @PathVariable Long carId,
+            @RequestBody @Valid DateRange dateRange,
+            @RequestParam(defaultValue = "0") int pageNumber,
+            @RequestParam(required = false) Integer pageSize) {
+
+        int effectivePageSize = (pageSize != null) ? pageSize : defaultPageSize;
+
+        PageResponse<MaintenanceHistoryDTO> maintenanceHistoryDTOPageResponse = maintenanceService.getByCarIdAndDate(carId, dateRange.getStartDate(), dateRange.getEndDate(), pageNumber, effectivePageSize);
+
+        return ResponseEntity.ok(maintenanceHistoryDTOPageResponse);
     }
 }

@@ -34,10 +34,6 @@ public class CarIncidentsController {
 
         PageResponse<CarIncidentsDTO> incidents = carIncidentsService.getAll(pageNumber, effectivePageSize);
 
-//        if (incidents.items().isEmpty()) {
-//            return ResponseEntity.noContent().build();
-//        }
-
         return ResponseEntity.ok(incidents);
     }
 
@@ -85,10 +81,6 @@ public class CarIncidentsController {
 
         PageResponse<CarIncidentsDTO> carIncidentsDTOPageResponse = carIncidentsService.getByCarId(carId, pageNumber, effectivePageSize);
 
-//        if (carIncidentsDTOPageResponse.items().isEmpty()) {
-//            return ResponseEntity.noContent().build();
-//        }
-
         return ResponseEntity.ok(carIncidentsDTOPageResponse);
     }
 
@@ -101,10 +93,6 @@ public class CarIncidentsController {
         int effectivePageSize = (pageSize != null) ? pageSize : defaultPageSize;
 
         PageResponse<CarIncidentsDTO> carIncidentsDTOPageResponse = carIncidentsService.getByDate(dateRange.getStartDate(), dateRange.getEndDate(), pageNumber, effectivePageSize);
-
-//        if (carIncidentsDTOPageResponse.items().isEmpty()) {
-//            return ResponseEntity.noContent().build();
-//        }
 
         return ResponseEntity.ok(carIncidentsDTOPageResponse);
     }
