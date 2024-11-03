@@ -58,11 +58,14 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/com.itextpdf/itext7-core -->
         <dependency>
-            <groupId>net.sf.jasperreports</groupId>
-            <artifactId>jasperreports</artifactId>
-            <version>6.19.0</version>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>itext7-core</artifactId>
+            <version>8.0.5</version>
+            <type>pom</type>
         </dependency>
+
         <!--        <dependency>-->
         <!--            <groupId>com.proyecto</groupId>-->
         <!--            <artifactId>flotavehicular</artifactId>-->

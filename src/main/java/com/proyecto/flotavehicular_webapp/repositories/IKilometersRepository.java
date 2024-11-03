@@ -7,11 +7,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Date;
+import java.util.List;
 
 
 @Repository
 public interface IKilometersRepository extends JpaRepository<Kilometers, Long> {
     Page<Kilometers> findByCarId(Long carId, Pageable pageable);
+
+    List<Kilometers> findByCarId(Long carId);
 
     Page<Kilometers> findByCreatedAtBetween(Date startDate, Date endDate, Pageable pageable);
 

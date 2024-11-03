@@ -1,94 +1,94 @@
 package com.proyecto.flotavehicular_webapp.services.Reports;
 
-import com.proyecto.flotavehicular_webapp.dto.CarReportWrapper;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.layout.Document;
+import com.itextpdf.layout.element.Paragraph;
+import com.itextpdf.layout.element.Table;
 import com.proyecto.flotavehicular_webapp.models.Car.Car;
 import com.proyecto.flotavehicular_webapp.models.Car.Kilometers;
 import com.proyecto.flotavehicular_webapp.models.Car.MaintenanceHistory;
 import com.proyecto.flotavehicular_webapp.repositories.ICarRepository;
 import com.proyecto.flotavehicular_webapp.repositories.IKilometersRepository;
 import com.proyecto.flotavehicular_webapp.repositories.IMaintenanceRepository;
-import jakarta.servlet.http.HttpServletResponse;
-import net.sf.jasperreports.engine.*;
-import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class CarReports {
 
     private final ICarRepository carRepository;
-    private final IMaintenanceRepository maintenanceHistoryRepository;
     private final IKilometersRepository kilometersRepository;
+    private final IMaintenanceRepository maintenanceHistoryRepository;
 
-    public CarReports(ICarRepository carRepository,
-                      IMaintenanceRepository maintenanceHistoryRepository,
-                      IKilometersRepository kilometersRepository) {
+    public CarReports(ICarRepository carRepository, IKilometersRepository kilometersRepository, IMaintenanceRepository maintenanceHistoryRepository) {
         this.carRepository = carRepository;
-        this.maintenanceHistoryRepository = maintenanceHistoryRepository;
         this.kilometersRepository = kilometersRepository;
+        this.maintenanceHistoryRepository = maintenanceHistoryRepository;
     }
 
-    public void exportReport(HttpServletResponse response, int pageNumber, int pageSize) throws JRException, IOException {
-        // Obtén todos los vehículos (o utiliza paginación si es necesario)
-        List<Car> vehicles = carRepository.findAll();
+    public byte[] generateCarReport() throws IOException {
+        log.info("Iniciando la generación del reporte de autos.");
 
-        // Define la paginación
-        Pageable pageable = PageRequest.of(pageNumber, pageSize);
+        List<Car> carList = carRepository.findAll(); // Obtener todos los autos
+        log.info("Total de autos encontrados: {}", carList.size());
 
-        // Mapea cada vehículo a su envoltura con mantenimientos y kilómetros
-        List<CarReportWrapper> carReportWrappers = vehicles.stream().map(vehicle -> {
-            List<MaintenanceHistory> maintenanceHistories = maintenanceHistoryRepository.findByCarId(vehicle.getId(), pageable).getContent();
-            List<Kilometers> kilometers = kilometersRepository.findByCarId(vehicle.getId(), pageable).getContent();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        PdfWriter writer = new PdfWriter(outputStream);
+        PdfDocument pdf = new PdfDocument(writer);
+        Document document = new Document(pdf);
 
-            CarReportWrapper carReportWrapper = new CarReportWrapper();
-            carReportWrapper.setCar(vehicle);
-            carReportWrapper.setMaintenanceHistories(maintenanceHistories);
-            carReportWrapper.setKilometers(kilometers);
+        // Título del reporte
+        document.add(new Paragraph("Reporte de Autos").setBold().setFontSize(20));
+        document.add(new Paragraph(" ")); // Espacio
 
-            return carReportWrapper;
-        }).collect(Collectors.toList());
+        // Crear una tabla para mostrar la información de los autos
+        Table table = new Table(4); // 4 columnas: Matrícula, Marca, Modelo, Kilometraje
+        table.addHeaderCell("Matrícula");
+        table.addHeaderCell("Marca");
+        table.addHeaderCell("Modelo");
+        table.addHeaderCell("Kilometraje Actual");
 
-        // Verifica que los datos se hayan obtenido correctamente
-        if (carReportWrappers.isEmpty()) {
-            throw new JRException("No se encontraron datos para generar el reporte.");
-        }
+        // Llenar la tabla con información de los autos
+        for (Car car : carList) {
+            log.info("Procesando auto: {}", car.getLicensePlate());
 
-        // Carga la plantilla .jrxml
-        try (InputStream templateStream = getClass().getResourceAsStream("/reports/car_reports.jrxml")) {
-            if (templateStream == null) {
-                throw new JRException("No se encontró el archivo de plantilla de reporte.");
+            table.addCell(car.getLicensePlate());
+            table.addCell(car.getBrand());
+            table.addCell(car.getModel());
+
+            // Obtener el kilometraje actual
+            List<Kilometers> currentKilometers = kilometersRepository.findByCarId(car.getId());
+            int actualKm = (currentKilometers != null && !currentKilometers.isEmpty()) ? currentKilometers.get(0).getActualKm() : 0; // Valor por defecto
+            table.addCell(String.valueOf(actualKm)); // Asegúrate de que el kilometraje sea un String
+
+            // Obtener el historial de mantenimiento
+            List<MaintenanceHistory> maintenanceHistories = maintenanceHistoryRepository.findByCarId(car.getId());
+            if (!maintenanceHistories.isEmpty()) {
+                document.add(new Paragraph("Historial de Mantenimiento para: " + car.getLicensePlate()));
+                for (MaintenanceHistory maintenance : maintenanceHistories) {
+                    document.add(new Paragraph("Descripción: " + maintenance.getDescription()));
+                    document.add(new Paragraph("Costo: " + maintenance.getCost()));
+                    document.add(new Paragraph("Tipo: " + maintenance.getType()));
+                    document.add(new Paragraph("Fecha: " + maintenance.getCreatedAt()));
+                    document.add(new Paragraph(" ")); // Espacio entre mantenimientos
+                }
+            } else {
+                document.add(new Paragraph("No hay historial de mantenimiento para este auto."));
+                log.info("No hay historial de mantenimiento para el auto: {}", car.getLicensePlate());
             }
-
-            // Compila el archivo .jrxml
-            JasperReport jasperReport = JasperCompileManager.compileReport(templateStream);
-
-            // Prepara el datasource con los carReportWrappers
-            JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(carReportWrappers);
-            Map<String, Object> parameters = new HashMap<>();
-            parameters.put("createdBy", "Sistema de Gestión de Vehículos");
-
-            // Llena el reporte con los datos
-            JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
-
-            // Configura la respuesta HTTP para enviar el PDF al cliente
-            response.setContentType("application/pdf");
-            response.setHeader("Content-Disposition", "attachment; filename=reporte_vehiculos.pdf");
-
-            // Exporta el reporte como un flujo PDF a la respuesta HTTP
-            JasperExportManager.exportReportToPdfStream(jasperPrint, response.getOutputStream());
-        } catch (JRException | IOException e) {
-            e.printStackTrace();
-            // En caso de error, puedes devolver un mensaje de error al cliente
-            response.setContentType("text/html");
-            response.getWriter().write("<h1>Error al generar el reporte</h1>");
         }
+
+        // Agregar la tabla al documento
+        document.add(table);
+        document.close();
+
+        log.info("Reporte de autos generado exitosamente.");
+        return outputStream.toByteArray();
     }
 }

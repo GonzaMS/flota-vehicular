@@ -1,6 +1,5 @@
 package com.proyecto.flotavehicular_webapp.controllers;
 
-import com.proyecto.flotavehicular_webapp.dto.car.KilometersDTO;
 import com.proyecto.flotavehicular_webapp.dto.car.MaintenanceHistoryDTO;
 import com.proyecto.flotavehicular_webapp.models.Car.MaintenanceHistory;
 import com.proyecto.flotavehicular_webapp.services.IMaintenanceService;
