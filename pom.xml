@@ -58,19 +58,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/com.itextpdf/itext7-core -->
-        <dependency>
-            <groupId>com.itextpdf</groupId>
-            <artifactId>itext7-core</artifactId>
-            <version>8.0.5</version>
-            <type>pom</type>
-        </dependency>
-
-        <!--        <dependency>-->
-        <!--            <groupId>com.proyecto</groupId>-->
-        <!--            <artifactId>flotavehicular</artifactId>-->
-        <!--            <version>1.0.0</version>-->
-        <!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>com.proyecto</groupId>-->
+<!--            <artifactId>flotavehicular</artifactId>-->
+<!--            <version>1.0.0</version>-->
+<!--        </dependency>-->
 
         <!-- https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-starter-netflix-eureka-client -->
         <dependency>
@@ -99,6 +91,12 @@
             <artifactId>jjwt-jackson</artifactId> <!-- Para el manejo de JSON -->
             <version>0.11.5</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>
