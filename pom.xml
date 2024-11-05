@@ -58,11 +58,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
-        <dependency>
-            <groupId>net.sf.jasperreports</groupId>
-            <artifactId>jasperreports</artifactId>
-            <version>6.19.0</version>
-        </dependency>
         <!--        <dependency>-->
         <!--            <groupId>com.proyecto</groupId>-->
         <!--            <artifactId>flotavehicular</artifactId>-->
@@ -95,6 +90,12 @@
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-jackson</artifactId> <!-- Para el manejo de JSON -->
             <version>0.11.5</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>2.13.0</version>
         </dependency>
     </dependencies>
 
