@@ -70,27 +70,4 @@ public class DrivingHistoryController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/by-driver/{driverId}")
-    public ResponseEntity<PageResponse<DrivingHistoryDTO>> getDrivingHistoryByDriverId(
-            @PathVariable Long driverId,
-            @RequestParam(defaultValue = "0") int pageNumber,
-            @RequestParam(defaultValue = "10") int pageSize) {
-        PageResponse<DrivingHistoryDTO> drivingHistories = drivingHistoryService.getDrivingHistoryByDriverId(driverId, pageNumber, pageSize);
-        if(drivingHistories.items().isEmpty()){
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.ok(drivingHistories);
-    }
-
-    @GetMapping("/by-car/{carId}")
-    public ResponseEntity<PageResponse<DrivingHistoryDTO>> getDrivingHistoryByCarId(
-            @PathVariable("carId") Long carId,
-            @RequestParam(defaultValue = "0") int pageNumber,
-            @RequestParam(defaultValue = "10") int pageSize) {
-        PageResponse<DrivingHistoryDTO> drivingHistories = drivingHistoryService.getDrivingHistoryByCarId(carId, pageNumber, pageSize);
-        if(drivingHistories.items().isEmpty()){
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.ok(drivingHistories);
-    }
 }

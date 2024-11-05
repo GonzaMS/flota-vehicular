@@ -2,15 +2,14 @@ package com.proyecto.flotavehicular_webapp.services.Impl;
 
 import com.proyecto.flotavehicular_webapp.dto.driver.DrivingHistoryDTO;
 import com.proyecto.flotavehicular_webapp.exceptions.NotFoundException;
-import com.proyecto.flotavehicular_webapp.models.Car.Car;
-import com.proyecto.flotavehicular_webapp.models.Driver.Driver;
+import com.proyecto.flotavehicular_webapp.models.Travel.AssignedOrder;
 import com.proyecto.flotavehicular_webapp.models.Driver.DrivingHistory;
-import com.proyecto.flotavehicular_webapp.repositories.IDriverRepository;
+import com.proyecto.flotavehicular_webapp.repositories.IAssignedOrderRepository;
 import com.proyecto.flotavehicular_webapp.repositories.IDrivingHistoryRepository;
-import com.proyecto.flotavehicular_webapp.services.ExternalApiService;
 import com.proyecto.flotavehicular_webapp.services.IDrivingHistoryService;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
 import com.proyecto.flotavehicular_webapp.utils.RedisUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.Cache;
@@ -27,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
+@Slf4j
 public class IDrivingHistoryServiceImpl implements IDrivingHistoryService {
 
     private final IDrivingHistoryRepository drivingHistoryRepository;
@@ -35,15 +35,13 @@ public class IDrivingHistoryServiceImpl implements IDrivingHistoryService {
 
     private static final Logger logger = LoggerFactory.getLogger(IDrivingHistoryServiceImpl.class);
 
-    private final IDriverRepository driverRepository;
-    private final ExternalApiService externalApiService;
+    private final IAssignedOrderRepository assignedOrderRepository;
     private final CacheManager cacheManager;
 
 
-    public IDrivingHistoryServiceImpl(IDrivingHistoryRepository drivingHistoryRepository, IDriverRepository driverRepository, ExternalApiService externalApiService, CacheManager cacheManager ) {
+    public IDrivingHistoryServiceImpl(IDrivingHistoryRepository drivingHistoryRepository, IAssignedOrderRepository assignedOrderRepository, CacheManager cacheManager ) {
         this.drivingHistoryRepository = drivingHistoryRepository;
-        this.driverRepository = driverRepository;
-        this.externalApiService = externalApiService;
+        this.assignedOrderRepository = assignedOrderRepository;
         this.cacheManager = cacheManager;
     }
 
@@ -86,18 +84,11 @@ public class IDrivingHistoryServiceImpl implements IDrivingHistoryService {
     @Transactional
     public DrivingHistory saveDrivingHistory(DrivingHistoryDTO drivingHistoryDTO, String token) {
         try {
-            Driver driver = driverRepository.findById(drivingHistoryDTO.getDriverId())
-                    .orElseThrow(() -> new NotFoundException("Driver not found"));
-
-            // Llamar a la API externa pasando el token JWT
-            Car car = externalApiService.callExternalApi(drivingHistoryDTO.getCarId(), token);
-            if (car == null){
-                throw new NotFoundException("Car not found");
-            }
+            AssignedOrder assignedOrder = assignedOrderRepository.findById(drivingHistoryDTO.getAssignedOrderId())
+                    .orElseThrow(() -> new NotFoundException("Assigner not found"));
 
             DrivingHistory drivingHistory = mapToEntity(drivingHistoryDTO);
-            drivingHistory.setDriver(driver);
-            drivingHistory.setCar(car);
+            drivingHistory.setAssignedOrder(assignedOrder);
 
             return drivingHistoryRepository.save(drivingHistory);
 
@@ -139,55 +130,6 @@ public class IDrivingHistoryServiceImpl implements IDrivingHistoryService {
         drivingHistoryRepository.delete(drivingHistory);
     }
 
-    @Override
-    @Transactional(readOnly = true)
-    @Cacheable(cacheManager = "cacheManagerWithoutTtl", value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_history_', #driverId)")
-    public PageResponse<DrivingHistoryDTO> getDrivingHistoryByDriverId(Long driverId, int pageNumber, int pageSize) {
-        try {
-            Pageable pageable = PageRequest.of(pageNumber, pageSize);
-            Page<DrivingHistory> drivingHistoryPage = drivingHistoryRepository.findByDriverDriverId(driverId, pageable);
-
-            if (drivingHistoryPage.isEmpty()) {
-                throw new NotFoundException("Driver ID not found: " + driverId);
-            }
-
-            return mapToPageResponse(drivingHistoryPage);
-
-        } catch (NotFoundException e) {
-            logger.error("Maintenance not found for driver with id: {}", driverId);
-            throw e;
-
-        } catch (Exception e) {
-            logger.error("Error getting history by driver id: {}", e.getMessage());
-            throw new NotFoundException("Error getting history by driver id");
-        }
-    }
-
-    @Override
-    @Transactional(readOnly = true)
-    @Cacheable(cacheManager = "cacheManagerWithoutTtl", value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_history_', #carId)")
-
-    public PageResponse<DrivingHistoryDTO> getDrivingHistoryByCarId(Long carId, int pageNumber, int pageSize) {
-        try {
-            Pageable pageable = PageRequest.of(pageNumber, pageSize);
-            Page<DrivingHistory> drivingHistoryPage = drivingHistoryRepository.findByCar_Id(carId, pageable);
-
-            if (drivingHistoryPage.isEmpty()) {
-                throw new NotFoundException("Car ID not found: " + carId);
-            }
-            return mapToPageResponse(drivingHistoryPage);
-        } catch (NotFoundException e) {
-            logger.error("Maintenance not found for car with id: {}", carId);
-            throw e;
-
-        } catch (Exception e) {
-            logger.error("Error getting history by car id: {}", e.getMessage());
-            throw new NotFoundException("Error getting history by car id");
-        }
-
-
-
-    }
 
     // Mappers
     private DrivingHistoryDTO mapToDTO(DrivingHistory drivingHistory) {
@@ -195,8 +137,7 @@ public class IDrivingHistoryServiceImpl implements IDrivingHistoryService {
                 .drivingHistoryId(drivingHistory.getDrivingHistoryId())
                 .createdAt(drivingHistory.getCreatedAt())
                 .kmDriven(drivingHistory.getKmDriven())
-                .driverId(drivingHistory.getDriver().getDriverId())
-                .carId(drivingHistory.getCar().getId())
+                .assignedOrderId(drivingHistory.getAssignedOrder().getAssignedOrderId())
                 .build();
     }
 

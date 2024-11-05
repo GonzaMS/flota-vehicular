@@ -12,6 +12,7 @@ import com.proyecto.flotavehicular_webapp.services.IAssignedOrderService;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
 import com.proyecto.flotavehicular_webapp.utils.RedisUtils;
 import org.hibernate.service.spi.ServiceException;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.Cache;
@@ -28,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @Service
+@Slf4j
 public class IAssignedOrderServiceImpl implements IAssignedOrderService{
 
     private final IAssignedOrderRepository assignedOrderRepository;
@@ -94,26 +96,20 @@ public class IAssignedOrderServiceImpl implements IAssignedOrderService{
     @Transactional
     public AssignedOrder saveAssignedOrder(AssignedOrderDTO assignedOrderDTO, String token) {
         try {
-            // Buscar el conductor
             Driver driver = driverRepository.findById(assignedOrderDTO.getDriverId())
                     .orElseThrow(() -> new NotFoundException(DRIVER_NOT_FOUND));
 
-            // Llamar a la API externa pasando el token JWT
             Car car = externalApiService.callExternalApi(assignedOrderDTO.getCarId(), token);
             if (car == null) {
                 throw new NotFoundException("Car not found");
             }
 
-            // Mapear la DTO a la entidad AssignedOrder
+            log.warn("car {}", car );
             AssignedOrder assignedOrder = mapToEntity(assignedOrderDTO);
             assignedOrder.setDriver(driver);
             assignedOrder.setCar(car);
 
-            // Guardar la orden asignada
             return assignedOrderRepository.save(assignedOrder);
-        } catch (NotFoundException e) {
-            logger.error("Car with id {} not found", assignedOrderDTO.getCarId());
-            throw e;
         } catch (Exception e) {
             logger.error("Error saving assigned orders: {}", e.getMessage());
             throw new ServiceException("Error saving assigned orders");
@@ -135,11 +131,8 @@ public class IAssignedOrderServiceImpl implements IAssignedOrderService{
             if (car == null) {
                 throw new NotFoundException("Car not found");
             }
-
-            assignedOrder.setItinerary(assignedOrderDTO.getItinerary());
             assignedOrder.setDriver(driver);
             assignedOrder.setCar(car);
-            assignedOrder.setTravelOrderId(assignedOrderDTO.getTravelOrderId());
 
             assignedOrderRepository.save(assignedOrder);
 
@@ -168,8 +161,6 @@ public class IAssignedOrderServiceImpl implements IAssignedOrderService{
         return AssignedOrder.builder()
                 .assignedOrderId(assignedOrderDTO.getAssignedOrderId())
                 .createdAt(assignedOrderDTO.getCreatedAt())
-                .itinerary(assignedOrderDTO.getItinerary())
-                .travelOrderId(assignedOrderDTO.getTravelOrderId())
                 .build();
     }
 
@@ -177,10 +168,8 @@ public class IAssignedOrderServiceImpl implements IAssignedOrderService{
             return AssignedOrderDTO.builder()
                     .assignedOrderId(assignedOrder.getAssignedOrderId())
                     .createdAt(assignedOrder.getCreatedAt())
-                    .itinerary(assignedOrder.getItinerary())
                     .driverId(assignedOrder.getDriver().getDriverId())
                     .carId(assignedOrder.getCar().getId())
-                    .travelOrderId(assignedOrder.getTravelOrderId())
                     .build();
         }
 

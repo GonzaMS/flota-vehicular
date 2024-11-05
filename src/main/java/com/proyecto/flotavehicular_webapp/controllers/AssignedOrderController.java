@@ -4,7 +4,6 @@ import com.proyecto.flotavehicular_webapp.dto.travel.AssignedOrderDTO;
 import com.proyecto.flotavehicular_webapp.models.Travel.AssignedOrder;
 import com.proyecto.flotavehicular_webapp.services.IAssignedOrderService;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -29,7 +28,8 @@ public class AssignedOrderController {
         return ResponseEntity.ok(assignedOrderDTO);
     }
 
-    @PostMapping("/assigned-orders")
+    @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AssignedOrder> saveAssignedOrder(
             @RequestBody AssignedOrderDTO assignedOrderDTO,
             @RequestHeader(HttpHeaders.AUTHORIZATION) String token) {
@@ -39,7 +39,8 @@ public class AssignedOrderController {
     }
 
 
-    @PutMapping("/assigned-orders/{id}")
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<AssignedOrderDTO> updateAssignedOrder(
             @PathVariable Long id,
             @RequestBody AssignedOrderDTO assignedOrderDTO,
@@ -58,6 +59,7 @@ public class AssignedOrderController {
     }
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PageResponse<AssignedOrderDTO>> getAllAssignedOrders(
             @RequestParam(defaultValue = "0") int pageNumber,
             @RequestParam(defaultValue = "10") int pageSize) {

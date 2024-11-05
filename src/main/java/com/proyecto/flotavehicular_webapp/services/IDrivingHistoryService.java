@@ -16,7 +16,4 @@ public interface IDrivingHistoryService {
 
     PageResponse<DrivingHistoryDTO> getAllDrivingHistories(int pageNumber, int pageSize);
 
-    PageResponse<DrivingHistoryDTO> getDrivingHistoryByDriverId(Long driverId, int pageNumber, int pageSize);
-
-    PageResponse<DrivingHistoryDTO> getDrivingHistoryByCarId(Long carId, int pageNumber, int pageSize);
 }

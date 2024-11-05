@@ -11,7 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 
 import jakarta.validation.Valid;
 @RestController
-@RequestMapping("/api/v1/incidents")
+@RequestMapping("/api/v1/driving_incidents")
 public class DriverIncidentsController {
 
     private final IDriverIncidentsService incidentRecordService;
