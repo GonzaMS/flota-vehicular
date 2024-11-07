@@ -84,7 +84,7 @@ public class IAssignedOrderServiceImpl implements IAssignedOrderService{
 
 
     @Override
-        @Transactional(readOnly = true)
+    @Transactional(readOnly = true)
     @Cacheable(cacheManager = "cacheManagerWithoutTtl", value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_assignedOrder_', #id)")
         public AssignedOrderDTO getAssignedOrderById(Long id) {
             AssignedOrder assignedOrder = assignedOrderRepository.findById(id)
@@ -102,6 +102,10 @@ public class IAssignedOrderServiceImpl implements IAssignedOrderService{
             Car car = externalApiService.callExternalApi(assignedOrderDTO.getCarId(), token);
             if (car == null) {
                 throw new NotFoundException("Car not found");
+            }
+
+            if (assignedOrderRepository.findByDriver_driverIdAndCarId(driver.getDriverId(), car.getId()).isPresent()) {
+                throw new ServiceException("This car is already assigned to the driver.");
             }
 
             log.warn("car {}", car );

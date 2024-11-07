@@ -3,6 +3,7 @@ package com.proyecto.flotavehicular_webapp.exceptions;
 import com.proyecto.flotavehicular_webapp.exceptions.DTO.ErrorDTO;
 import com.proyecto.flotavehicular_webapp.utils.ViewConstants;
 import jakarta.servlet.http.HttpServletRequest;
+import org.hibernate.service.spi.ServiceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authorization.AuthorizationDeniedException;
@@ -206,5 +207,29 @@ public class GlobalExceptionHandler {
 
         return new ResponseEntity<>(errorObject, HttpStatus.FORBIDDEN);
     }
+
+    @ExceptionHandler(ServiceException.class)
+    public Object handleServiceException(ServiceException ex, HttpServletRequest request) {
+        String acceptHeader = request.getHeader(ViewConstants.REQUEST_HEADER);
+
+        // Si el cliente espera una respuesta en HTML, mostramos una página de error personalizada
+        if (acceptHeader != null && acceptHeader.contains(ViewConstants.HEADER_CONTAINS_HTML)) {
+            ModelAndView mav = new ModelAndView(ViewConstants.ERROR_400_PAGE);
+            mav.addObject("message", ex.getMessage());
+            return mav;
+        }
+
+        // Si se espera un JSON o un tipo de contenido que no sea HTML, devolvemos una respuesta JSON con el error
+        ErrorDTO errorObject = new ErrorDTO(
+                request.getRequestURI(),
+                "Bad Request",
+                ex.getMessage(), // El mensaje de la excepción que detalla el error
+                LocalDateTime.now().format(FORMATTER),
+                HttpStatus.BAD_REQUEST.value()
+        );
+
+        return new ResponseEntity<>(errorObject, HttpStatus.BAD_REQUEST);
+    }
+
 
 }

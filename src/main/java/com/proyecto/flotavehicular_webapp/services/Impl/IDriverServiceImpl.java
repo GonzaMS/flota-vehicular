@@ -215,6 +215,7 @@ public class IDriverServiceImpl implements IDriverService {
                 .driverLicense(driverDTO.getDriverLicense())
                 .driverState(driverDTO.getDriverState())
                 .driverLicenseExpirationDate(driverDTO.getDriverLicenseExpirationDate())
+                .userId(driverDTO.getUserId())
                 .build();
     }
 
@@ -225,7 +226,8 @@ public class IDriverServiceImpl implements IDriverService {
                 .driverLicense(driver.getDriverLicense())
                 .driverName(driver.getDriverName())
                 .driverState(driver.getDriverState())
-                .driverLicenseExpirationDate(driver.getDriverLicenseExpirationDate());
+                .driverLicenseExpirationDate(driver.getDriverLicenseExpirationDate())
+                .userId(driver.getUserId());
         return builder.build();
     }
 

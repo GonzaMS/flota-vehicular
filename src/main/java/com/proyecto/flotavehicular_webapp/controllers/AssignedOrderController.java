@@ -4,6 +4,7 @@ import com.proyecto.flotavehicular_webapp.dto.travel.AssignedOrderDTO;
 import com.proyecto.flotavehicular_webapp.models.Travel.AssignedOrder;
 import com.proyecto.flotavehicular_webapp.services.IAssignedOrderService;
 import com.proyecto.flotavehicular_webapp.utils.PageResponse;
+import org.hibernate.service.spi.ServiceException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -65,5 +66,11 @@ public class AssignedOrderController {
             @RequestParam(defaultValue = "10") int pageSize) {
         PageResponse<AssignedOrderDTO> pageResponse = assignedOrderService.getAllAssignedOrders(pageNumber, pageSize);
         return ResponseEntity.ok(pageResponse);
+    }
+
+    // Manejador de excepciones para ServiceException
+    @ExceptionHandler(ServiceException.class)
+    public ResponseEntity<String> handleServiceException(ServiceException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 }
