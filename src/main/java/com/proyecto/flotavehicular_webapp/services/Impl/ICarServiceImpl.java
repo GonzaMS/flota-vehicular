@@ -14,11 +14,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.hibernate.service.spi.ServiceException;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,7 +45,7 @@ public class ICarServiceImpl implements ICarService {
     @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
     public PageResponse<CarDTO> getAll(int pageNumber, int pageSize) {
         try {
-            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+            Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("brand").ascending());
             Page<Car> carPage = carRepository.findAll(pageable);
 
             carPage.forEach(car -> {
@@ -75,22 +75,22 @@ public class ICarServiceImpl implements ICarService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class, timeout = 5)
+    @CacheEvict(value = "sd", key = "'api_car__' + #carDTO.state", beforeInvocation = true, allEntries = true)
     public Car save(CarDTO carDTO) {
         try {
             Car car = mapToEntity(carDTO);
-            return carRepository.save(car);
-        } catch (NotFoundException e) {
-            log.error("Rollback triggered - Parameters: carDTO={}, carId={}", carDTO, carDTO.getId());
-            throw e;
+            Car savedCar = carRepository.save(car);
+
+            return savedCar;
         } catch (Exception e) {
-            log.error("Rollback triggered - Error saving incident: {}, Parameters: carIncidentsDTO={}, carId={}", e.getMessage(), carDTO, carDTO.getId());
-            throw new ServiceException("Error saving incident");
+            log.error("Error al guardar el auto: {}", e.getMessage());
+            throw new ServiceException("Error al guardar el auto");
         }
     }
 
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW, rollbackFor = Exception.class, timeout = 10)
-    @CachePut(value = "sd", cacheManager = "cacheManagerWithoutTtl", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_car_', #id)", unless = "#result == null")
+    @CacheEvict(value = "sd", key = "'api_car_state_' + #carDTO.state", allEntries = true)
     public CarDTO update(Long id, CarDTO carDTO) {
         try {
             Car car = carRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
@@ -99,8 +99,13 @@ public class ICarServiceImpl implements ICarService {
             car.setModel(carDTO.getModel());
             car.setLicensePlate(carDTO.getLicensePlate());
             car.setFabricationYear(carDTO.getFabricationYear());
-            car.setState(carDTO.getState());
 
+            if (!car.getState().equals(carDTO.getState())) {
+                cacheManager.getCache("sd").evict("api_car__" + car.getState());
+                cacheManager.getCache("sd").evict("api_car__" + carDTO.getState());
+            }
+
+            car.setState(carDTO.getState());
             carRepository.save(car);
 
             return mapToDTO(car);
@@ -132,52 +137,37 @@ public class ICarServiceImpl implements ICarService {
 
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED, rollbackFor = Exception.class, timeout = 10)
-    @CachePut(value = "sd", cacheManager = "cacheManagerWithoutTtl", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_car_', #id)")
+    @CacheEvict(value = "sd", key = "'api_car_' + #id", allEntries = true)
     public void deactivate(Long id) {
-        try {
-            Car car = carRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
-            car.setState(ESTATES.INACTIVE);
-            carRepository.save(car);
-        } catch (NotFoundException e) {
-            log.error("Rollback triggered - Parameters: id={}", id);
-            throw e;
-        } catch (Exception e) {
-            log.error("Rollback triggered - Error deactivating Car: {}, Parameters: id={}", e.getMessage(), id);
-            throw new ServiceException("Error deactivating car");
-        }
+        Car car = carRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
+        car.setState(ESTATES.INACTIVE);
+        carRepository.save(car);
+
     }
 
     @Override
     @Transactional(propagation = Propagation.NOT_SUPPORTED, rollbackFor = Exception.class, timeout = 10)
-    @CachePut(value = "sd", cacheManager = "cacheManagerWithoutTtl", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_car_', #id)")
+    @CacheEvict(value = "sd", key = "'api_car_' + #id", allEntries = true)
     public void activate(Long id) {
-        try {
-            Car car = carRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
-            car.setState(ESTATES.ACTIVE);
-            carRepository.save(car);
-        } catch (NotFoundException e) {
-            log.error("Rollback triggered - Parameters: id={}", id);
-            throw e;
-        } catch (Exception e) {
-            log.error("Rollback triggered - Error activating Car: {}, Parameters: id={}", e.getMessage(), id);
-            throw new ServiceException("Error activating car");
-        }
+        Car car = carRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
+        car.setState(ESTATES.ACTIVE);
+        carRepository.save(car);
+
     }
 
     // Filters
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "sd", key = "T(com.proyecto.flotavehicular_webapp.utils.RedisUtils).CacheKeyGenerator('api_car_', #state)")
+    @Cacheable(value = "sd", key = "'api_car__' + #state + '_page_' + #pageNumber + '_size_' + #pageSize")
     public PageResponse<CarDTO> getByState(String state, int pageNumber, int pageSize) {
         try {
-            Pageable pageable = PageRequest.of(pageNumber, pageSize);
+            Pageable pageable = PageRequest.of(pageNumber, pageSize, Sort.by("brand").ascending());
 
             if (!EnumUtils.isValidState(state)) {
                 throw new NotFoundException("Car state not valid only [ACTIVE, INACTIVE]");
             }
 
             ESTATES carState = ESTATES.valueOf(state);
-
             Page<Car> carPage = carRepository.findByState(carState, pageable);
 
             if (carPage.isEmpty()) {
@@ -252,7 +242,7 @@ public class ICarServiceImpl implements ICarService {
             Page<Car> carPage = carRepository.findByLicensePlate(licensePlate, pageable);
 
             if (carPage.isEmpty()) {
-                throw new NotFoundException("Cars with " + licensePlate + " not found");
+                throw new NotFoundException("Cars with licensePlate " + licensePlate + " not found");
             }
 
             return mapToPageResponse(carPage);
