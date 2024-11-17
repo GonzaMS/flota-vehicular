@@ -107,6 +107,10 @@ public class IDrivingHistoryServiceImpl implements IDrivingHistoryService {
             DrivingHistory drivingHistory = drivingHistoryRepository.findById(id).orElseThrow(() -> new NotFoundException(NOTFOUND));
 
             drivingHistory.setCreatedAt(drivingHistoryDTO.getCreatedAt());
+            drivingHistory.setDriverName(drivingHistoryDTO.getDriverName());
+            drivingHistory.setDriverLicense(drivingHistoryDTO.getDriverLicense());
+            drivingHistory.setCarBrand(drivingHistoryDTO.getCarBrand());
+            drivingHistory.setCarPlate(drivingHistoryDTO.getCarPlate());
             drivingHistory.setKmDriven(drivingHistoryDTO.getKmDriven());
 
             drivingHistoryRepository.save(drivingHistory);
@@ -136,6 +140,10 @@ public class IDrivingHistoryServiceImpl implements IDrivingHistoryService {
         return DrivingHistoryDTO.builder()
                 .drivingHistoryId(drivingHistory.getDrivingHistoryId())
                 .createdAt(drivingHistory.getCreatedAt())
+                .driverName(drivingHistory.getDriverName())
+                .driverLicense(drivingHistory.getDriverLicense())
+                .carBrand(drivingHistory.getCarBrand())
+                .carPlate(drivingHistory.getCarPlate())
                 .kmDriven(drivingHistory.getKmDriven())
                 .assignedOrderId(drivingHistory.getAssignedOrder().getAssignedOrderId())
                 .build();
@@ -145,6 +153,10 @@ public class IDrivingHistoryServiceImpl implements IDrivingHistoryService {
         return DrivingHistory.builder()
                 .drivingHistoryId(drivingHistoryDTO.getDrivingHistoryId())
                 .createdAt(drivingHistoryDTO.getCreatedAt())
+                .driverName(drivingHistoryDTO.getDriverName())
+                .driverLicense(drivingHistoryDTO.getDriverLicense())
+                .carBrand(drivingHistoryDTO.getCarBrand())
+                .carPlate(drivingHistoryDTO.getCarPlate())
                 .kmDriven(drivingHistoryDTO.getKmDriven())
                 .build();
     }
