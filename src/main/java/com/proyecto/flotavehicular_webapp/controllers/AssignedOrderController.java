@@ -60,7 +60,6 @@ public class AssignedOrderController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PageResponse<AssignedOrderDTO>> getAllAssignedOrders(
             @RequestParam(defaultValue = "0") int pageNumber,
             @RequestParam(defaultValue = "10") int pageSize) {

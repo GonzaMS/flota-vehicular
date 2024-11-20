@@ -22,7 +22,6 @@ public class DrivingHistoryController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<PageResponse<DrivingHistoryDTO>> getAllDrivingHistories(
             @RequestParam(defaultValue = "0") int pageNumber,
             @RequestParam(defaultValue = "10") int pageSize) {
